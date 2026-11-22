@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier des cartes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:ital@1&family=Alegreya+Sans:wght@400;500&display=swap">
+<style>
+  :root { color-scheme: dark; --bg: #121014; --fg: #e6dccb; --dim: #a99e90; --line: #3a3236; --accent: #c08a4e; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 "Alegreya Sans", system-ui, sans-serif; padding: 20px max(16px, env(safe-area-inset-left, 0px)) 40px max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font: 700 26px "Cinzel", Georgia, serif; margin: 0 0 4px; }
+  p.lede { color: var(--dim); margin: 0 0 16px; max-width: 70ch; }
+  .bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+  select, button { font: inherit; color: var(--fg); background: #1c181b; border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; }
+  #status { color: var(--dim); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 22px 16px; }
+  figure { margin: 0; display: grid; gap: 6px; justify-items: center; }
+  figure canvas { width: 100%; max-width: 300px; height: auto; filter: drop-shadow(0 10px 18px rgba(0,0,0,.6)); }
+  figcaption { font: 600 14px "Cinzel", Georgia, serif; color: var(--dim); }
+</style>
+</head>
+<body>
+<h1>Atelier des cartes</h1>
+<p class="lede">Une même carte dans les six raretés. Le fond prend la couleur de la faction, le cadre et les motifs montent avec la rareté. Emblème et silhouette sont provisoires.</p>
+<div class="bar">
+  <label for="faction">Faction</label>
+  <select id="faction"></select>
+  <span id="status">Rendu en cours…</span>
+</div>
+<div class="grid" id="grid"></div>
+<script src="../moteur/relief.js"></script>
+<script src="../moteur/helpers.js"></script>
+<script src="carte.js"></script>
+<script src="factions.js"></script>
+<script>
+  const sel = document.getElementById('faction');
+  const q = new URLSearchParams(location.search);
+  FACTIONS.forEach((f) => { const o = document.createElement('option'); o.value = f.id; o.textContent = f.name; sel.append(o); });
+  sel.value = q.get('faction') || 'orques-sang';
+  const only = q.get('only') ? q.get('only').split(',') : null;
+  let token = 0;
+  async function draw() {
+    const my = ++token;
+    const grid = document.getElementById('grid'); grid.replaceChildren();
+    const f = FACTIONS.find((x) => x.id === sel.value);
+    const st = document.getElementById('status'); const t0 = performance.now();
+    try { await document.fonts.load('700 23px "Cinzel"'); await document.fonts.load('italic 17px "Alegreya"'); } catch (e) {}
+    for (const key of Carte.ORDER) {
+      if (only && !only.includes(key)) continue;
+      st.textContent = 'Rendu : ' + Carte.RARITIES[key].label + '…';
+      await new Promise((r) => setTimeout(r, 0));
+      if (my !== token) return;
+      const fig = document.createElement('figure');
+      let cv;
+      try { cv = Carte.renderCard(f, key); } catch (e) { console.error(e); cv = document.createElement('canvas'); cv.width = 512; cv.height = 716; const x = cv.getContext('2d'); x.fillStyle = '#f66'; x.font = '16px sans-serif'; x.fillText('Erreur : ' + e.message, 10, 300); }
+      const cap = document.createElement('figcaption'); cap.textContent = Carte.RARITIES[key].label;
+      fig.append(cv, cap); grid.append(fig);
+    }
+    st.textContent = 'Fait en ' + ((performance.now() - t0) / 1000).toFixed(1) + ' s';
+    document.title = 'done';
+  }
+  sel.addEventListener('change', draw);
+  draw();
+</script>
+</body>
+</html>
