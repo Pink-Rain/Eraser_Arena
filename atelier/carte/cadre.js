@@ -280,8 +280,9 @@
   }
 
   // Pastille d'emblème en haut à droite (symbole provisoire en attendant ceux des factions).
-  function drawEmblemDot(ctx, rar, faction) {
-    const t = rar.t, x = W - t - 30, y = t + 30, r = 22;
+  function drawEmblemDot(ctx, rar, faction) { drawEmblemAt(ctx, rar, faction, W - rar.t - 30, rar.t + 30); }
+  function drawEmblemAt(ctx, rar, faction, x, y) {
+    const r = 22;
     const c = hex(faction.color);
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8;
     ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = '#0c0c0e'; ctx.fill(); ctx.restore();
@@ -343,47 +344,61 @@
     ctx.fillStyle = '#f7f1e6'; ctx.fillText(name, CX, (y0 + y1) / 2 + 1); ctx.restore();
   }
 
-  // card : { name, rarity, faction, category, ability, flavor, attack, life }
+  // Disposition du croquis, rapportée à 512 × 716 :
+  // pastilles du haut (coût, emblème), petite illustration, nom vers 40 %, faction,
+  // capacité, citation, pastilles du bas (attaque, vie). Les pastilles sont décalées
+  // vers le centre pour ne jamais couvrir les ornements d'angle.
+  const SKETCH = { padX: 118, topY: 52, art: { x0: 46, y0: 86, x1: W - 46, y1: 250, r: 8 }, name: { y0: 266, y1: 316 }, catY: 346, textY: 392, botY: H - 52 };
+
+  // card : { name, rarity, faction, ability, flavor, attack, life }
   function renderCard(card) {
     const rar = RARITIES[card.rarity]; const t = rar.t;
     const win = { x0: t, y0: t, x1: W - t, y1: H - t, r: 10 };
     const out = document.createElement('canvas'); out.width = W; out.height = H;
     const ctx = out.getContext('2d');
     ctx.save(); path(ctx, rr(CARD)); ctx.clip();
-    // Fond : la couleur de la faction derrière l'illustration, qui descend vers le sombre pour le texte.
+    // Fond de la carte : couleur de la faction, plus claire en haut, sombre en bas pour le texte.
     const c = hex(card.faction.color);
-    const g = ctx.createRadialGradient(CX, 190, 10, CX, 230, 360);
-    g.addColorStop(0, rgb(c, 1.1)); g.addColorStop(0.55, rgb(c, 0.7)); g.addColorStop(1, rgb(c, 0.3));
+    const g = ctx.createRadialGradient(CX, 200, 20, CX, 260, 420);
+    g.addColorStop(0, rgb(c, 1)); g.addColorStop(0.5, rgb(c, 0.6)); g.addColorStop(1, rgb(c, 0.25));
     ctx.fillStyle = g; path(ctx, rr(win)); ctx.fill();
-    const dark = ctx.createLinearGradient(0, 300, 0, 470);
-    dark.addColorStop(0, 'rgba(8,8,10,0)'); dark.addColorStop(1, 'rgba(8,8,10,0.82)');
+    const dark = ctx.createLinearGradient(0, 300, 0, 440);
+    dark.addColorStop(0, 'rgba(8,8,10,0)'); dark.addColorStop(1, 'rgba(8,8,10,0.78)');
     ctx.fillStyle = dark; ctx.fillRect(0, 300, W, H - 300);
-    // Repère de l'illustration (provisoire).
+    // Petite fenêtre de l'illustration, avec un liseré de la rareté.
+    const A = SKETCH.art;
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 3;
+    path(ctx, rr(A)); ctx.fillStyle = rgb(c, 0.3); ctx.fill(); ctx.restore();
+    const ga = ctx.createRadialGradient(CX, (A.y0 + A.y1) / 2, 10, CX, (A.y0 + A.y1) / 2, 240);
+    ga.addColorStop(0, 'rgba(255,255,255,0.12)'); ga.addColorStop(1, 'rgba(0,0,0,0.35)');
+    path(ctx, rr(A)); ctx.fillStyle = ga; ctx.fill();
+    ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.lineWidth = 1.3; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 2 + 4 * rar.glow; }
+    path(ctx, rr(A, -2)); ctx.stroke(); ctx.restore();
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 15px "Alegreya Sans", system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 230);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText('ILLUSTRATION', CX, (A.y0 + A.y1) / 2);
     drawFrameSingle(ctx, rar, win);
     // En haut : coût (à décider) et emblème.
-    drawCostDot(ctx, rar, t + 34, t + 34);
-    drawEmblemDot(ctx, rar, card.faction);
-    // Nom, puis catégorie.
-    drawNameBox(ctx, rar, card.name, 384, 434);
+    drawCostDot(ctx, rar, SKETCH.padX, SKETCH.topY);
+    drawEmblemAt(ctx, rar, card.faction, W - SKETCH.padX, SKETCH.topY);
+    // Nom, puis la faction seule.
+    drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1);
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.font = '600 13px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = 'rgba(240,234,224,0.72)';
-    ctx.fillText(card.category.toUpperCase().split('').join(' '), CX, 462);
-    // Capacité, filet, citation : alignés à gauche, comme dans le croquis.
-    const left = t + 28, width = W - 2 * left;
+    ctx.font = '600 14px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = 'rgba(240,234,224,0.78)';
+    ctx.fillText(card.faction.short.toUpperCase().split('').join(' '), CX, SKETCH.catY);
+    // Capacité, filet, citation : alignés à gauche.
+    const left = 52, width = W - 2 * left;
     ctx.textAlign = 'left';
-    let y = 504;
+    let y = SKETCH.textY;
     ctx.font = '500 19px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = '#f4efe6';
     for (const line of wrap(ctx, card.ability, width)) { ctx.fillText(line, left, y); y += 25; }
     ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.globalAlpha = 0.8; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(left, y - 4); ctx.lineTo(left + 110, y - 4); ctx.stroke(); ctx.restore();
     y += 22;
-    ctx.font = 'italic 17px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.78)';
+    ctx.font = 'italic 17px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.8)';
     for (const line of wrap(ctx, '« ' + card.flavor + ' »', width)) { ctx.fillText(line, left, y); y += 22; }
     // En bas : attaque à gauche, vie à droite.
-    drawStat(ctx, rar, t + 36, H - t - 36, card.attack, 'attaque');
-    drawStat(ctx, rar, W - t - 36, H - t - 36, card.life, 'vie');
+    drawStat(ctx, rar, SKETCH.padX, SKETCH.botY, card.attack, 'attaque');
+    drawStat(ctx, rar, W - SKETCH.padX, SKETCH.botY, card.life, 'vie');
     ctx.restore();
     return out;
   }

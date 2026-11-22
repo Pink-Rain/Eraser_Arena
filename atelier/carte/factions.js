@@ -22,10 +22,12 @@ window.FACTIONS = [
   { id: 'nashmur', name: "Nash'mur", color: '#2c4a6e', depth: 1 },
   { id: 'autres', name: 'Les Autres', color: '#7a5aa8', depth: 0 },
   { id: 'gardiens', name: 'Gardiens', color: '#a483c9', depth: 1 },
-  { id: 'les-neuf', name: 'Les Neuf (dieux)', color: '#d8ccb4', depth: 2 },
+  { id: 'les-neuf', name: 'Les Neuf (dieux)', short: 'Les Neuf', color: '#d8ccb4', depth: 2 },
   { id: 'titans', name: 'Titans', color: '#8e2a1f', depth: 1 },
   { id: 'nids-morts', name: 'Nimors', color: '#3a2448', depth: 1 },
 ];
+// short : nom affiché sur la carte (par défaut, le nom).
+window.FACTIONS.forEach((f) => { if (!f.short) f.short = f.name; });
 (() => {
   const seen = new Map();
   for (const f of window.FACTIONS) {
