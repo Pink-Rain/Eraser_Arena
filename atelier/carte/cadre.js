@@ -207,7 +207,7 @@
     g.addColorStop(0, rgb(c, 1.1)); g.addColorStop(0.6, rgb(c, 0.7)); g.addColorStop(1, rgb(c, 0.35));
     ctx.fillStyle = g; path(ctx, rr(art)); ctx.fill();
     const t = ctx.createLinearGradient(0, text.y0, 0, text.y1);
-    t.addColorStop(0, rgb(c, 0.5)); t.addColorStop(1, rgb(c, 0.3));
+    t.addColorStop(0, rgb(c, 0.34)); t.addColorStop(1, rgb(c, 0.2));
     ctx.fillStyle = t; path(ctx, rr(text)); ctx.fill();
   }
 
@@ -223,5 +223,113 @@
     return out;
   }
 
-  root.Cadre = { W, H, RARITIES, ORDER, windows, drawFrame, renderFrame };
+  /* ---------- la carte complète : nom, catégorie, capacité, citation, attaque, vie ---------- */
+  // Retour à la ligne d'un texte dans une largeur donnée ; renvoie les lignes.
+  function wrap(ctx, str, maxW) {
+    const words = String(str).split(/\s+/); const lines = []; let cur = '';
+    for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  // Bandeau du nom : plaque noire à bouts pointus, liseré et petits losanges de la rareté.
+  function drawNameBanner(ctx, rar, name, cy) {
+    const hw = 176, hh = 21, tip = 16;
+    const pts = [[CX - hw, cy], [CX - hw + tip, cy - hh], [CX + hw - tip, cy - hh], [CX + hw, cy], [CX + hw - tip, cy + hh], [CX - hw + tip, cy + hh]];
+    const poly = () => { ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); };
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
+    poly(); const g = ctx.createLinearGradient(0, cy - hh, 0, cy + hh); g.addColorStop(0, '#1d1c22'); g.addColorStop(1, '#09090b'); ctx.fillStyle = g; ctx.fill();
+    ctx.restore();
+    const touch = touchStyle(ctx, rar);
+    ctx.save(); ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineJoin = 'round';
+    if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 2 + 4 * rar.glow; }
+    poly(); ctx.lineWidth = 1.6; ctx.stroke();
+    [-1, 1].forEach((s) => diamond(ctx, CX + s * (hw - 1), cy, 5.5, touch));
+    ctx.restore();
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    let size = 24; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`;
+    while (ctx.measureText(name).width > hw * 2 - tip * 2 - 16 && size > 14) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }
+    ctx.fillStyle = '#f7f1e6'; ctx.fillText(name, CX, cy + 1);
+    ctx.restore();
+  }
+
+  // Pastille de stat dans un coin du bas : disque noir, anneau de la rareté, icône et chiffre.
+  function drawStat(ctx, rar, x, y, value, icon) {
+    const r = 27;
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); const g = ctx.createLinearGradient(0, y - r, 0, y + r); g.addColorStop(0, '#1f1e24'); g.addColorStop(1, '#08080a'); ctx.fillStyle = g; ctx.fill();
+    ctx.restore();
+    const touch = touchStyle(ctx, rar);
+    ctx.save(); ctx.strokeStyle = touch; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 2 + 4 * rar.glow; }
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, r - 1.5, 0, TAU); ctx.stroke();
+    ctx.lineWidth = 0.8; ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.arc(x, y, r - 5, 0, TAU); ctx.stroke();
+    ctx.restore();
+    // Icône discrète derrière le chiffre.
+    ctx.save(); ctx.translate(x, y); ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.strokeStyle = 'rgba(255,255,255,0.13)';
+    if (icon === 'attaque') { // épée
+      ctx.rotate(-Math.PI / 4); ctx.beginPath(); ctx.moveTo(0, -17); ctx.lineTo(3.2, -12); ctx.lineTo(3.2, 7); ctx.lineTo(-3.2, 7); ctx.lineTo(-3.2, -12); ctx.closePath(); ctx.fill();
+      ctx.fillRect(-9, 7, 18, 3.4); ctx.fillRect(-1.8, 10, 3.6, 7);
+    } else { // cœur
+      ctx.beginPath(); ctx.moveTo(0, 15); ctx.bezierCurveTo(-20, 2, -14, -16, 0, -6); ctx.bezierCurveTo(14, -16, 20, 2, 0, 15); ctx.fill();
+    }
+    ctx.restore();
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '700 28px "Cinzel", Georgia, serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4; ctx.fillStyle = '#ffffff'; ctx.fillText(String(value), x, y + 2);
+    ctx.restore();
+  }
+
+  // Pastille d'emblème en haut à droite (symbole provisoire en attendant ceux des factions).
+  function drawEmblemDot(ctx, rar, faction) {
+    const t = rar.t, x = W - t - 30, y = t + 30, r = 22;
+    const c = hex(faction.color);
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = '#0c0c0e'; ctx.fill(); ctx.restore();
+    const g = ctx.createRadialGradient(x - 5, y - 6, 2, x, y, r); g.addColorStop(0, rgb(c, 1.25)); g.addColorStop(1, rgb(c, 0.6));
+    ctx.beginPath(); ctx.arc(x, y, r - 4, 0, TAU); ctx.fillStyle = g; ctx.fill();
+    const touch = touchStyle(ctx, rar);
+    ctx.save(); ctx.strokeStyle = touch; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(x, y, r - 1, 0, TAU); ctx.stroke(); ctx.restore();
+    ctx.beginPath(); for (let k = 0; k < 8; k += 1) { const a = -Math.PI / 2 + (k / 8) * TAU; const rad = k % 2 ? 3 : 9.5; const px = x + Math.cos(a) * rad, py = y + Math.sin(a) * rad; if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
+    ctx.closePath(); ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fill();
+  }
+
+  // card : { name, rarity, faction, category, ability, flavor, attack, life }
+  function renderCard(card) {
+    const rar = RARITIES[card.rarity];
+    const out = renderFrame(card.rarity, card.faction);
+    const ctx = out.getContext('2d');
+    const { art, text } = windows(rar);
+    const junction = (art.y1 + text.y0) / 2;
+    ctx.save(); ctx.beginPath(); rr(CARD)(ctx); ctx.clip();
+    // Voile en bas de l'illustration, pour poser le bandeau.
+    const fade = ctx.createLinearGradient(0, art.y1 - 70, 0, art.y1);
+    fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, 'rgba(0,0,0,0.45)');
+    ctx.save(); ctx.beginPath(); rr(art)(ctx); ctx.clip(); ctx.fillStyle = fade; ctx.fillRect(art.x0, art.y1 - 70, art.x1 - art.x0, 70); ctx.restore();
+    drawFrame(ctx, rar); // redessine le cadre par-dessus le voile
+    drawEmblemDot(ctx, rar, card.faction);
+    drawNameBanner(ctx, rar, card.name, junction);
+    // Catégorie.
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '600 13px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = 'rgba(240,234,224,0.7)';
+    const cat = card.category.toUpperCase().split('').join(' ');
+    ctx.fillText(cat, CX, junction + 44);
+    // Capacité spéciale.
+    let y = junction + 84;
+    ctx.font = '500 19px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = '#f4efe6';
+    for (const line of wrap(ctx, card.ability, text.x1 - text.x0 - 110)) { ctx.fillText(line, CX, y); y += 24; }
+    // Filet puis citation d'ambiance.
+    y += 6;
+    ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.globalAlpha = 0.7; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(CX - 40, y - 8); ctx.lineTo(CX + 40, y - 8); ctx.stroke(); ctx.restore();
+    y += 18;
+    ctx.font = 'italic 17px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.75)';
+    for (const line of wrap(ctx, '« ' + card.flavor + ' »', text.x1 - text.x0 - 130)) { ctx.fillText(line, CX, y); y += 21; }
+    // Attaque et vie, dans les coins du bas.
+    drawStat(ctx, rar, text.x0 + 26, text.y1 - 26, card.attack, 'attaque');
+    drawStat(ctx, rar, text.x1 - 26, text.y1 - 26, card.life, 'vie');
+    ctx.restore();
+    return out;
+  }
+
+  root.Cadre = { W, H, RARITIES, ORDER, windows, drawFrame, renderFrame, renderCard };
 }(window));
