@@ -6,7 +6,11 @@ Le labo où on fabrique les visuels des cartes, hors de l'application.
   (le moteur de relief d'Eraser). Changements : la surface peut être rectangulaire
   (`Relief.setSize(largeur, hauteur)`), et `Relief.distanceField(masque)` donne des biseaux
   sur n'importe quelle forme.
-- `index.html` : la page de l'atelier (la même que l'artefact « Atelier des cartes ») : une carte par
+- `codex.html` : le Codex d'Eraser (source de l'artefact « Codex d'Eraser »). Étiquettes, factions et
+  fiches ; chaque fiche est rendue directement en carte (agrandir, retourner, modifier avec aperçu),
+  et l'onglet Atelier montre les six raretés et les logos. Ses données vivent dans la base de
+  l'artefact (claude.ai) : ouvert ailleurs, il s'affiche vide.
+- `index.html` : l'ancienne page de l'atelier (la même que l'artefact « Atelier des cartes ») : une carte par
   rareté sur le fond de la faction choisie ; un clic ouvre la carte en grand, un second la retourne.
 - `carte/cadre.js` : tout le dessin de la carte, en canvas 2D.
   - **cadre** : base noire, la couleur de la rareté en touches (liserés, filigranes qui s'enrichissent

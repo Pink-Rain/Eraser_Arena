@@ -519,21 +519,24 @@
     drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1);
     // Sous le nom : attaque à gauche, faction au milieu, vie à droite.
     const rowY = SKETCH.name.y1 + 44;
-    statDiamond(ctx, rar, CX - 150, rowY, card.attack, 'attaque');
-    statDiamond(ctx, rar, CX + 150, rowY, card.life, 'vie');
-    drawHonorific(ctx, rar, card.honor || '', rowY);
+    const stat = (v) => (v === undefined || v === null || v === '' ? '–' : v);
+    if (!card.noStats) {
+      statDiamond(ctx, rar, CX - 150, rowY, stat(card.attack), 'attaque');
+      statDiamond(ctx, rar, CX + 150, rowY, stat(card.life), 'vie');
+    }
+    if (card.honor) drawHonorific(ctx, rar, card.honor, rowY);
     // Capacité, centrée.
     const width = W - 2 * 56;
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     let y = rowY + 66;
     ctx.font = '500 19px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = '#f4efe6';
-    for (const line of wrap(ctx, card.ability, width)) { ctx.fillText(line, CX, y); y += 25; }
+    for (const line of wrap(ctx, card.ability || '', width)) { ctx.fillText(line, CX, y); y += 25; }
     // En bas de la carte : petit filet centré, puis la citation.
     ctx.font = 'italic 17px "Alegreya", Georgia, serif';
-    const lines = wrap(ctx, '« ' + card.flavor + ' »', width);
+    const lines = card.flavor ? wrap(ctx, '« ' + card.flavor + ' »', width) : [];
     let fy = H - t - 34 - (lines.length - 1) * 22;
-    ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.globalAlpha = 0.8; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(CX - 55, fy - 26); ctx.lineTo(CX + 55, fy - 26); ctx.stroke(); ctx.restore();
+    if (lines.length) { ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.globalAlpha = 0.8; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(CX - 55, fy - 26); ctx.lineTo(CX + 55, fy - 26); ctx.stroke(); ctx.restore(); }
     ctx.fillStyle = 'rgba(240,234,224,0.8)';
     for (const line of lines) { ctx.fillText(line, CX, fy); fy += 22; }
     ctx.restore();
