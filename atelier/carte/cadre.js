@@ -11,8 +11,8 @@
   // t : épaisseur du cadre ; corner : taille des ornements d'angle (0 = aucun) ;
   // double : second liseré ; glow : halo des touches de couleur.
   const RARITIES = {
-    trescommune: { label: 'Très commune', rank: 0, c: '#5f646d', lite: '#7c818a', t: 10, corner: 0, double: false, glow: 0 },
-    commune: { label: 'Commune', rank: 1, c: '#a9afb8', lite: '#d2d6dc', t: 12, corner: 0, double: false, glow: 0 },
+    trescommune: { label: 'Très commune', rank: 0, c: '#7a7f88', lite: '#979ca4', t: 10, corner: 17, double: false, glow: 0 },
+    commune: { label: 'Commune', rank: 1, c: '#a9afb8', lite: '#d2d6dc', t: 12, corner: 22, double: false, glow: 0 },
     rare: { label: 'Rare', rank: 2, c: '#3dbf72', lite: '#8ae6ad', t: 14, corner: 26, double: false, glow: 0.3 },
     superrare: { label: 'Super rare', rank: 3, c: '#4a8bff', lite: '#9cc0ff', t: 16, corner: 40, double: true, glow: 0.5 },
     epique: { label: 'Épique', rank: 4, c: '#a565ff', lite: '#d2b0ff', t: 19, corner: 58, double: true, glow: 0.7 },
@@ -79,6 +79,8 @@
   // l'intérieur de la fenêtre vers +x / +y. On la trace puis on la reflète sur la diagonale.
   function cornerHalf(ctx, rar, L) {
     const rk = rar.rank; const d = 4.5;
+    if (rk === 0) { taper(ctx, [[d, d], [L * 0.75, d]], 0.9, 0.45); return; } // simple trait
+    if (rk === 1) { taper(ctx, [[d, d], [L * 0.7, d]], 1, 0.5); dot(ctx, L * 0.85, d, 0.7); return; } // trait et point
     // Équerre fine le long du bord.
     taper(ctx, [[d, d], [L * 0.62, d]], 1.6, 0.7);
     // Volute au bout de l'équerre, qui s'enroule vers l'intérieur.
@@ -105,7 +107,8 @@
     cornerHalf(ctx, rar, L);
     ctx.save(); ctx.transform(0, 1, 1, 0, 0, 0); cornerHalf(ctx, rar, L); ctx.restore();
     // Cœur de l'angle : point (rare), losange (super rare), fleuron (épique et plus).
-    if (rar.rank === 2) dot(ctx, 6, 6, 1.6);
+    if (rar.rank === 0) dot(ctx, 5, 5, 1);
+    if (rar.rank === 1 || rar.rank === 2) { ctx.save(); ctx.translate(rar.rank === 1 ? 7 : 9, rar.rank === 1 ? 7 : 9); ctx.rotate(Math.PI / 4); diamond(ctx, 0, 0, rar.rank === 1 ? 3.5 : 5, ctx.fillStyle); ctx.restore(); }
     if (rar.rank >= 3) {
       if (rar.rank >= 4) { leaf(ctx, 6, 6, Math.PI / 4, L * 0.32, L * 0.06); leaf(ctx, 6, 6, Math.PI / 4 - 0.5, L * 0.2, L * 0.04); leaf(ctx, 6, 6, Math.PI / 4 + 0.5, L * 0.2, L * 0.04); }
       else { ctx.save(); ctx.translate(10, 10); ctx.rotate(Math.PI / 4); diamond(ctx, 0, 0, 6, ctx.fillStyle); ctx.restore(); }
@@ -115,9 +118,14 @@
 
   // Ornement au milieu d'un bord : losange (super rare), losange et volutes (épique),
   // médaillon de rinceaux (légendaire). (x, y) au centre ; l'ornement se déploie le long de l'axe a.
-  function midOrnament(ctx, rar, x, y, a) {
-    const rk = rar.rank; if (rk < 3) return;
+  // side : ornement d'un bord latéral (seulement à partir de rare).
+  function midOrnament(ctx, rar, x, y, a, side = false) {
+    const rk = rar.rank; if (side && rk < 2) return;
     ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    if (rk === 0) { dot(ctx, 0, 0, 1.2); [1, -1].forEach((s) => dot(ctx, s * 7, 0, 0.6)); ctx.restore(); return; }
+    if (rk === 1) { diamond(ctx, 0, 0, 4, ctx.fillStyle); ctx.restore(); return; }
+    if (rk === 2) { diamond(ctx, 0, 0, 5.5, ctx.fillStyle); [1, -1].forEach((s) => dot(ctx, s * 10, 0, 0.8)); ctx.restore(); return; }
+    if (rk === 3) { [1, -1].forEach((s) => taper(ctx, [[s * 9, 0], [s * 26, 0]], 1, 0.3)); [1, -1].forEach((s) => dot(ctx, s * 31, 0, 0.8)); }
     if (rk >= 4) {
       const L = rk === 5 ? 66 : 44;
       [1, -1].forEach((s) => {
@@ -175,8 +183,8 @@
     // Ornements au milieu des bords.
     midOrnament(ctx, rar, CX, rar.t / 2, 0);
     midOrnament(ctx, rar, CX, H - rar.t / 2, Math.PI);
-    midOrnament(ctx, rar, rar.t / 2, (art.y0 + art.y1) / 2, -Math.PI / 2);
-    midOrnament(ctx, rar, W - rar.t / 2, (art.y0 + art.y1) / 2, Math.PI / 2);
+    midOrnament(ctx, rar, rar.t / 2, (art.y0 + art.y1) / 2, -Math.PI / 2, true);
+    midOrnament(ctx, rar, W - rar.t / 2, (art.y0 + art.y1) / 2, Math.PI / 2, true);
     if (rar.rank >= 4) midOrnament(ctx, rar, CX, (art.y1 + text.y0) / 2, 0);
     ctx.restore();
   }
