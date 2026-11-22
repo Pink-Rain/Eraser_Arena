@@ -327,7 +327,26 @@
   }
 
   // Cadre rectangulaire du nom, comme dans le croquis.
-  function drawNameBox(ctx, rar, name, y0, y1) {
+  // Losange de stat posé au bout du bandeau du nom : chiffre au centre, icône en filigrane.
+  function statDiamond(ctx, rar, x, y, value, icon) {
+    const hw = 25, hh = 33;
+    const shape = () => { ctx.beginPath(); ctx.moveTo(x, y - hh); ctx.lineTo(x + hw, y); ctx.lineTo(x, y + hh); ctx.lineTo(x - hw, y); ctx.closePath(); };
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+    shape(); const g = ctx.createLinearGradient(0, y - hh, 0, y + hh); g.addColorStop(0, '#222127'); g.addColorStop(1, '#08080a'); ctx.fillStyle = g; ctx.fill(); ctx.restore();
+    const touch = touchStyle(ctx, rar);
+    ctx.save(); ctx.strokeStyle = touch; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 2 + 4 * rar.glow; }
+    ctx.lineWidth = 1.8; shape(); ctx.stroke();
+    ctx.lineWidth = 0.7; ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.moveTo(x, y - hh + 6); ctx.lineTo(x + hw - 5, y); ctx.lineTo(x, y + hh - 6); ctx.lineTo(x - hw + 5, y); ctx.closePath(); ctx.stroke();
+    ctx.restore();
+    ctx.save(); ctx.translate(x, y); ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    if (icon === 'attaque') { ctx.rotate(-Math.PI / 4); ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(3, -11); ctx.lineTo(3, 6); ctx.lineTo(-3, 6); ctx.lineTo(-3, -11); ctx.closePath(); ctx.fill(); ctx.fillRect(-8, 6, 16, 3); ctx.fillRect(-1.6, 9, 3.2, 6); }
+    else { ctx.beginPath(); ctx.moveTo(0, 13); ctx.bezierCurveTo(-18, 2, -12, -14, 0, -5); ctx.bezierCurveTo(12, -14, 18, 2, 0, 13); ctx.fill(); }
+    ctx.restore();
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '700 24px "Cinzel", Georgia, serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4; ctx.fillStyle = '#ffffff'; ctx.fillText(String(value), x, y + 2); ctx.restore();
+  }
+
+  function drawNameBox(ctx, rar, name, y0, y1, stats) {
     const x0 = 64, x1 = W - 64;
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
     const g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#1d1c22'); g.addColorStop(1, '#09090b');
@@ -336,11 +355,12 @@
     ctx.save(); ctx.strokeStyle = touch; ctx.fillStyle = touch; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 2 + 4 * rar.glow; }
     ctx.lineWidth = 1.5; ctx.strokeRect(x0 + 0.5, y0 + 0.5, x1 - x0 - 1, y1 - y0 - 1);
     if (rar.double) { ctx.lineWidth = 0.7; ctx.globalAlpha = 0.7; ctx.strokeRect(x0 + 4, y0 + 4, x1 - x0 - 8, y1 - y0 - 8); ctx.globalAlpha = 1; }
-    [-1, 1].forEach((s) => diamond(ctx, s < 0 ? x0 : x1, (y0 + y1) / 2, 6, touch));
     ctx.restore();
+    if (stats) { statDiamond(ctx, rar, x0, (y0 + y1) / 2, stats.attack, 'attaque'); statDiamond(ctx, rar, x1, (y0 + y1) / 2, stats.life, 'vie'); }
+    else [-1, 1].forEach((s) => diamond(ctx, s < 0 ? x0 : x1, (y0 + y1) / 2, 6, touch));
     ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     let size = 26; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`;
-    while (ctx.measureText(name).width > x1 - x0 - 40 && size > 14) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }
+    while (ctx.measureText(name).width > x1 - x0 - (stats ? 90 : 40) && size > 14) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }
     ctx.fillStyle = '#f7f1e6'; ctx.fillText(name, CX, (y0 + y1) / 2 + 1); ctx.restore();
   }
 
@@ -348,7 +368,7 @@
   // pastilles du haut (coût, emblème), petite illustration, nom vers 40 %, faction,
   // capacité, citation, pastilles du bas (attaque, vie). Les pastilles sont décalées
   // vers le centre pour ne jamais couvrir les ornements d'angle.
-  const SKETCH = { padX: 118, topY: 52, art: { x0: 46, y0: 86, x1: W - 46, y1: 250, r: 8 }, name: { y0: 266, y1: 316 }, catY: 346, textY: 392, botY: H - 52 };
+  const SKETCH = { padX: 118, topY: 52, name: { y0: 266, y1: 316 }, catY: 346, textY: 392, botY: H - 52 };
 
   // card : { name, rarity, faction, ability, flavor, attack, life }
   function renderCard(card) {
@@ -359,29 +379,20 @@
     ctx.save(); path(ctx, rr(CARD)); ctx.clip();
     // Fond de la carte : couleur de la faction, plus claire en haut, sombre en bas pour le texte.
     const c = hex(card.faction.color);
-    const g = ctx.createRadialGradient(CX, 200, 20, CX, 260, 420);
-    g.addColorStop(0, rgb(c, 1)); g.addColorStop(0.5, rgb(c, 0.6)); g.addColorStop(1, rgb(c, 0.25));
+    const g = ctx.createRadialGradient(CX, 130, 10, CX, 170, 330);
+    g.addColorStop(0, rgb(c, 1.1)); g.addColorStop(0.55, rgb(c, 0.7)); g.addColorStop(1, rgb(c, 0.3));
     ctx.fillStyle = g; path(ctx, rr(win)); ctx.fill();
-    const dark = ctx.createLinearGradient(0, 300, 0, 440);
+    const dark = ctx.createLinearGradient(0, 200, 0, 330);
     dark.addColorStop(0, 'rgba(8,8,10,0)'); dark.addColorStop(1, 'rgba(8,8,10,0.78)');
-    ctx.fillStyle = dark; ctx.fillRect(0, 300, W, H - 300);
-    // Petite fenêtre de l'illustration, avec un liseré de la rareté.
-    const A = SKETCH.art;
-    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 3;
-    path(ctx, rr(A)); ctx.fillStyle = rgb(c, 0.3); ctx.fill(); ctx.restore();
-    const ga = ctx.createRadialGradient(CX, (A.y0 + A.y1) / 2, 10, CX, (A.y0 + A.y1) / 2, 240);
-    ga.addColorStop(0, 'rgba(255,255,255,0.12)'); ga.addColorStop(1, 'rgba(0,0,0,0.35)');
-    path(ctx, rr(A)); ctx.fillStyle = ga; ctx.fill();
-    ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.lineWidth = 1.3; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 2 + 4 * rar.glow; }
-    path(ctx, rr(A, -2)); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = dark; ctx.fillRect(0, 200, W, H - 200);
+    // Repère de l'illustration (provisoire), sans cadre : l'image se fond dans la carte.
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 15px "Alegreya Sans", system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText('ILLUSTRATION', CX, (A.y0 + A.y1) / 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 160);
     drawFrameSingle(ctx, rar, win);
-    // En haut : coût (à décider) et emblème.
-    drawCostDot(ctx, rar, SKETCH.padX, SKETCH.topY);
-    drawEmblemAt(ctx, rar, card.faction, W - SKETCH.padX, SKETCH.topY);
-    // Nom, puis la faction seule.
-    drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1);
+    // Emblème au centre du motif du haut, comme un blason posé sur le cadre.
+    drawEmblemAt(ctx, rar, card.faction, CX, t + 12);
+    // Nom, avec l'attaque et la vie dans les losanges aux deux bouts ; puis la faction seule.
+    drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1, { attack: card.attack, life: card.life });
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     ctx.font = '600 14px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = 'rgba(240,234,224,0.78)';
     ctx.fillText(card.faction.short.toUpperCase().split('').join(' '), CX, SKETCH.catY);
@@ -396,9 +407,6 @@
     y += 22;
     ctx.font = 'italic 17px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.8)';
     for (const line of wrap(ctx, '« ' + card.flavor + ' »', width)) { ctx.fillText(line, left, y); y += 22; }
-    // En bas : attaque à gauche, vie à droite.
-    drawStat(ctx, rar, SKETCH.padX, SKETCH.botY, card.attack, 'attaque');
-    drawStat(ctx, rar, W - SKETCH.padX, SKETCH.botY, card.life, 'vie');
     ctx.restore();
     return out;
   }
