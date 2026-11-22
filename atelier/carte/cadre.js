@@ -297,42 +297,81 @@
   /* ---------- carte selon le croquis : un seul contour, tout à l'intérieur ---------- */
   // Cadre à une seule fenêtre (toute la carte) : même style, base noire et touches de rareté.
   // Cadre à une seule fenêtre (toute la carte) : base noire et touches de rareté.
-  // Avec une faction, son logo est niché dans chacun des quatre angles : les filigranes
-  // d'angle s'écartent autour de lui et repartent de part et d'autre, comme s'il en faisait partie.
-  const LOGO_SIZE = 32, LOGO_OFF = 18, LOGO_GAP = 19;
-  function logoSpots(win) {
-    const o = LOGO_OFF;
-    return [[win.x0 + o, win.y0 + o], [win.x1 - o, win.y0 + o], [win.x0 + o, win.y1 - o], [win.x1 - o, win.y1 - o]];
-  }
   function drawFrameSingle(ctx, rar, win, faction) {
     path(ctx, rr(CARD), rr(win));
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a191e'); g.addColorStop(1, '#08080a');
     ctx.fillStyle = g; ctx.fill('evenodd');
-    // Les touches de couleur sont dessinées sur un calque à part, pour pouvoir les écarter autour des logos.
-    const layer = document.createElement('canvas'); layer.width = W; layer.height = H;
-    const lc = layer.getContext('2d');
-    const touch = touchStyle(lc, rar);
-    lc.strokeStyle = touch; lc.fillStyle = touch; lc.lineCap = 'round'; lc.lineJoin = 'round';
-    if (rar.glow) { lc.shadowColor = rar.c; lc.shadowBlur = 3 + 5 * rar.glow; }
-    lc.globalAlpha = rar.rank <= 1 ? 0.55 : 0.8; lc.lineWidth = 1; path(lc, rr(CARD, 3.5)); lc.stroke(); lc.globalAlpha = 1;
-    lc.lineWidth = rar.rank <= 1 ? 1 : 1.4; path(lc, rr(win, -2)); lc.stroke();
-    if (rar.double) { lc.lineWidth = 0.8; lc.globalAlpha = 0.7; path(lc, rr(win, -5.5)); lc.stroke(); lc.globalAlpha = 1; }
+    const touch = touchStyle(ctx, rar);
+    ctx.save();
+    ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 3 + 5 * rar.glow; }
+    ctx.globalAlpha = rar.rank <= 1 ? 0.55 : 0.8; ctx.lineWidth = 1; path(ctx, rr(CARD, 3.5)); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.lineWidth = rar.rank <= 1 ? 1 : 1.4; path(ctx, rr(win, -2)); ctx.stroke();
+    if (rar.double) { ctx.lineWidth = 0.8; ctx.globalAlpha = 0.7; path(ctx, rr(win, -5.5)); ctx.stroke(); ctx.globalAlpha = 1; }
     const k = 1;
-    corner(lc, rar, win.x0 + k, win.y0 + k, 1, 1); corner(lc, rar, win.x1 - k, win.y0 + k, -1, 1);
-    corner(lc, rar, win.x0 + k, win.y1 - k, 1, -1); corner(lc, rar, win.x1 - k, win.y1 - k, -1, -1);
-    midOrnament(lc, rar, CX, rar.t / 2, 0);
-    midOrnament(lc, rar, CX, H - rar.t / 2, Math.PI);
-    midOrnament(lc, rar, rar.t / 2, H / 2, -Math.PI / 2, true);
-    midOrnament(lc, rar, W - rar.t / 2, H / 2, Math.PI / 2, true);
-    const withLogo = faction && root.Logos && root.Logos.has(faction.id);
-    if (withLogo) {
-      lc.shadowBlur = 0; lc.globalCompositeOperation = 'destination-out';
-      for (const [x, y] of logoSpots(win)) { const gr = lc.createRadialGradient(x, y, LOGO_GAP - 3, x, y, LOGO_GAP + 2); gr.addColorStop(0, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)'); lc.fillStyle = gr; lc.beginPath(); lc.arc(x, y, LOGO_GAP + 2, 0, TAU); lc.fill(); }
-    }
-    ctx.drawImage(layer, 0, 0);
-    if (withLogo) {
-      const stops = rar.rank === 5 ? [[0, '#fff0bd'], [0.35, '#e3ad48'], [0.7, '#ffe39a'], [1, '#c88a2a']] : [[0, rar.lite], [1, rar.c]];
-      for (const [x, y] of logoSpots(win)) root.Logos.draw(ctx, faction.id, x, y, LOGO_SIZE, stops, 'rgba(0,0,0,0.85)', rar.glow ? rar.c : null);
+    corner(ctx, rar, win.x0 + k, win.y0 + k, 1, 1); corner(ctx, rar, win.x1 - k, win.y0 + k, -1, 1);
+    corner(ctx, rar, win.x0 + k, win.y1 - k, 1, -1); corner(ctx, rar, win.x1 - k, win.y1 - k, -1, -1);
+    midOrnament(ctx, rar, CX, rar.t / 2, 0);
+    midOrnament(ctx, rar, CX, H - rar.t / 2, Math.PI);
+    midOrnament(ctx, rar, rar.t / 2, H / 2, -Math.PI / 2, true);
+    midOrnament(ctx, rar, W - rar.t / 2, H / 2, Math.PI / 2, true);
+    ctx.restore();
+    if (faction && root.Logos && root.Logos.has(faction.id)) drawFrameLogos(ctx, rar, win, faction.id);
+  }
+
+  /* ---------- logos de faction, liés au cadre (une mise en scène par rareté) ---------- */
+  // Rien n'est effacé : les logos s'accrochent au cadre par un fil ou se logent dans un espace libre.
+  function drawFrameLogos(ctx, rar, win, id) {
+    const t = rar.t, rk = rar.rank, L = rar.corner;
+    const stops = rk === 5 ? [[0, '#fff0bd'], [0.35, '#e3ad48'], [0.7, '#ffe39a'], [1, '#c88a2a']] : [[0, rar.lite], [1, rar.c]];
+    const touch = touchStyle(ctx, rar);
+    const logo = (x, y, size, rot = 0) => { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); root.Logos.draw(ctx, id, 0, 0, size, stops, 'rgba(0,0,0,0.7)', rar.glow ? rar.c : null); ctx.restore(); };
+    const line = (pts, w = 0.9) => { ctx.save(); ctx.strokeStyle = touch; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.globalAlpha = 0.9; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 3; } ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); ctx.restore(); };
+    const bead = (x, y, r = 1.4) => { ctx.save(); ctx.fillStyle = touch; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill(); ctx.restore(); };
+    // Pendentif : un fil part de (x0, y0) sur le cadre et le logo pend au bout, tourné selon la direction du fil.
+    // Le logo reste droit : seuls ceux du bas des cartes sont retournés, comme dans un jeu de cartes.
+    const pendant = (x0, y0, dx, dy, len, size) => {
+      const x1 = x0 + dx * len, y1 = y0 + dy * len;
+      line([[x0, y0], [x1, y1]]); bead(x1, y1, 1.6);
+      logo(x1 + dx * (size / 2 + 2), y1 + dy * (size / 2 + 2), size, 0);
+    };
+    if (rk === 0) {
+      // Très commune : un seul pendentif au centre du haut.
+      pendant(CX, t / 2 + 2, 0, 1, t / 2 + 6, 32);
+    } else if (rk === 1) {
+      // Commune : deux pendentifs aux flancs, à mi-hauteur.
+      pendant(t / 2, H / 2, 1, 0, t / 2 + 6, 30);
+      pendant(W - t / 2, H / 2, -1, 0, t / 2 + 6, 30);
+    } else if (rk === 2) {
+      // Rare : quatre logos logés dans les angles, après l'équerre ; ceux du bas tournés comme dans un jeu de cartes.
+      const o = 30, sz = 28;
+      logo(win.x0 + o, win.y0 + o, sz); logo(win.x1 - o, win.y0 + o, sz);
+      logo(win.x0 + o, win.y1 - o, sz, Math.PI); logo(win.x1 - o, win.y1 - o, sz, Math.PI);
+    } else if (rk === 3) {
+      // Super rare : en diagonale, reliés au losange d'angle par un fil ; ceux du bas retournés.
+      const c0 = 13, c1 = 28, o = 44;
+      [[win.x0, win.y0, 1, 1], [win.x1, win.y0, -1, 1], [win.x0, win.y1, 1, -1], [win.x1, win.y1, -1, -1]].forEach(([x, y, sx, sy]) => {
+        line([[x + sx * c0, y + sy * c0], [x + sx * c1, y + sy * c1]]);
+        logo(x + sx * o, y + sy * o, 28, sy > 0 ? 0 : Math.PI);
+      });
+    } else if (rk === 4) {
+      // Épique : guirlande partant de la crête, trois logos suspendus.
+      const y0 = t + 1, span = 124, dip = 30;
+      [-1, 1].forEach((s) => {
+        const pts = []; for (let i = 0; i <= 30; i += 1) { const u = i / 30; pts.push([CX + s * (14 + u * span), y0 + Math.sin(u * Math.PI) * dip]); }
+        line(pts, 0.9); bead(CX + s * (14 + span), y0, 1.6);
+        const mx = CX + s * (14 + span / 2), my = y0 + dip;
+        line([[mx, my], [mx, my + 5]]); logo(mx, my + 5 + 13, 24);
+      });
+      pendant(CX, t / 2 + 6, 0, 1, t / 2 + 4, 36);
+    } else {
+      // Légendaire : grand logo sous la crête, couronné d'un arc de perles ; deux pendentifs aux flancs.
+      const cy = t + 44, size = 46;
+      for (let i = 0; i < 11; i += 1) { const a = Math.PI + (i / 10) * Math.PI; bead(CX + Math.cos(a) * 36, cy + Math.sin(a) * 36 + 4, i % 2 ? 1.3 : 2); }
+      line([[CX, t / 2 + 8], [CX, cy - 33]]);
+      logo(CX, cy + 2, size);
+      pendant(t / 2 + 4, H / 2, 1, 0, t / 2 + 4, 32);
+      pendant(W - t / 2 - 4, H / 2, -1, 0, t / 2 + 4, 32);
     }
   }
 
