@@ -328,22 +328,36 @@
 
   // Cadre rectangulaire du nom, comme dans le croquis.
   // Losange de stat posé au bout du bandeau du nom : chiffre au centre, icône en filigrane.
+  // Pastille de stat : losange pour l'attaque, écu (bouclier) pour la vie.
+  // Chiffre au centre, icône en filigrane (épée ou cœur).
   function statDiamond(ctx, rar, x, y, value, icon) {
-    const hw = 25, hh = 33;
-    const shape = () => { ctx.beginPath(); ctx.moveTo(x, y - hh); ctx.lineTo(x + hw, y); ctx.lineTo(x, y + hh); ctx.lineTo(x - hw, y); ctx.closePath(); };
+    const isLife = icon === 'vie';
+    const shape = (k) => {
+      ctx.beginPath();
+      if (!isLife) { const hw = 25 * k, hh = 33 * k; ctx.moveTo(x, y - hh); ctx.lineTo(x + hw, y); ctx.lineTo(x, y + hh); ctx.lineTo(x - hw, y); ctx.closePath(); return; }
+      const hw = 24 * k, hh = 30 * k, top = y - hh;
+      ctx.moveTo(x - hw, top + hh * 0.22);
+      ctx.quadraticCurveTo(x - hw * 0.5, top + hh * 0.1, x, top);
+      ctx.quadraticCurveTo(x + hw * 0.5, top + hh * 0.1, x + hw, top + hh * 0.22);
+      ctx.lineTo(x + hw, y + hh * 0.1);
+      ctx.bezierCurveTo(x + hw, y + hh * 0.6, x + hw * 0.45, y + hh * 0.85, x, y + hh);
+      ctx.bezierCurveTo(x - hw * 0.45, y + hh * 0.85, x - hw, y + hh * 0.6, x - hw, y + hh * 0.1);
+      ctx.closePath();
+    };
     ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
-    shape(); const g = ctx.createLinearGradient(0, y - hh, 0, y + hh); g.addColorStop(0, '#222127'); g.addColorStop(1, '#08080a'); ctx.fillStyle = g; ctx.fill(); ctx.restore();
+    shape(1); const g = ctx.createLinearGradient(0, y - 33, 0, y + 33); g.addColorStop(0, '#222127'); g.addColorStop(1, '#08080a'); ctx.fillStyle = g; ctx.fill(); ctx.restore();
     const touch = touchStyle(ctx, rar);
     ctx.save(); ctx.strokeStyle = touch; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 2 + 4 * rar.glow; }
-    ctx.lineWidth = 1.8; shape(); ctx.stroke();
-    ctx.lineWidth = 0.7; ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.moveTo(x, y - hh + 6); ctx.lineTo(x + hw - 5, y); ctx.lineTo(x, y + hh - 6); ctx.lineTo(x - hw + 5, y); ctx.closePath(); ctx.stroke();
+    ctx.lineWidth = 1.8; shape(1); ctx.stroke();
+    ctx.lineWidth = 0.7; ctx.globalAlpha = 0.7; shape(0.8); ctx.stroke();
     ctx.restore();
     ctx.save(); ctx.translate(x, y); ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    if (icon === 'attaque') { ctx.rotate(-Math.PI / 4); ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(3, -11); ctx.lineTo(3, 6); ctx.lineTo(-3, 6); ctx.lineTo(-3, -11); ctx.closePath(); ctx.fill(); ctx.fillRect(-8, 6, 16, 3); ctx.fillRect(-1.6, 9, 3.2, 6); }
+    if (!isLife) { ctx.rotate(-Math.PI / 4); ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(3, -11); ctx.lineTo(3, 6); ctx.lineTo(-3, 6); ctx.lineTo(-3, -11); ctx.closePath(); ctx.fill(); ctx.fillRect(-8, 6, 16, 3); ctx.fillRect(-1.6, 9, 3.2, 6); }
     else { ctx.beginPath(); ctx.moveTo(0, 13); ctx.bezierCurveTo(-18, 2, -12, -14, 0, -5); ctx.bezierCurveTo(12, -14, 18, 2, 0, 13); ctx.fill(); }
     ctx.restore();
-    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '700 24px "Cinzel", Georgia, serif';
-    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4; ctx.fillStyle = '#ffffff'; ctx.fillText(String(value), x, y + 2); ctx.restore();
+    const txt = String(value);
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `700 ${txt.length > 2 ? 15 : 24}px "Cinzel", Georgia, serif`;
+    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4; ctx.fillStyle = '#ffffff'; ctx.fillText(txt, x, y + (isLife ? 1 : 2)); ctx.restore();
   }
 
   function drawNameBox(ctx, rar, name, y0, y1, stats) {
@@ -443,5 +457,30 @@
     return out;
   }
 
-  root.Cadre = { W, H, RARITIES, ORDER, windows, drawFrame, renderFrame, renderCard };
+  // Dos de la carte (quand on la retourne) : nom, faction et rareté, puis la description.
+  function renderBack(card) {
+    const rar = RARITIES[card.rarity]; const t = rar.t;
+    const win = { x0: t, y0: t, x1: W - t, y1: H - t, r: 10 };
+    const out = document.createElement('canvas'); out.width = W; out.height = H;
+    const ctx = out.getContext('2d');
+    ctx.save(); path(ctx, rr(CARD)); ctx.clip();
+    const c = hex(card.faction.color);
+    const g = ctx.createRadialGradient(CX, H / 2, 20, CX, H / 2, 420);
+    g.addColorStop(0, rgb(c, 0.45)); g.addColorStop(1, rgb(c, 0.12));
+    ctx.fillStyle = g; path(ctx, rr(win)); ctx.fill();
+    drawFrameSingle(ctx, rar, win);
+    drawEmblemStar(ctx, rar, CX, t + 12);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    let size = 30; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`;
+    while (ctx.measureText(card.name).width > W - 120 && size > 16) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }
+    ctx.fillStyle = '#f7f1e6'; ctx.fillText(card.name, CX, 250);
+    drawFactionName(ctx, rar, card.faction.short + ' · ' + rar.label, 292);
+    ctx.font = 'italic 21px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.88)';
+    let y = 352;
+    for (const line of wrap(ctx, card.description || '', W - 140)) { ctx.fillText(line, CX, y); y += 30; }
+    ctx.restore();
+    return out;
+  }
+
+  root.Cadre = { W, H, RARITIES, ORDER, windows, drawFrame, renderFrame, renderCard, renderBack };
 }(window));

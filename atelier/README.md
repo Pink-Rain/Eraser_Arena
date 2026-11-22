@@ -6,14 +6,14 @@ Le labo où on fabrique les visuels des cartes, hors de l'application.
   (le moteur de relief d'Eraser). Changements : la surface peut être rectangulaire
   (`Relief.setSize(largeur, hauteur)`), et `Relief.distanceField(masque)` donne des biseaux
   sur n'importe quelle forme.
-- `carte/carte.js` dessine une carte au format TCG (63 × 88 mm, rendu en 512 × 716) en canvas 2D,
-  style moderne en aplats (pas de relief, pas de métal) :
-  - **cadre** : couleur pleine de la rareté en dégradé (gris foncé, gris, vert, bleu, violet, doré),
-    lueur dans les fenêtres, encoches, pierres latérales, chevron (épique) ou couronne (légendaire) ;
-  - **fond** : couleur de la faction en halo ; trame, rayons ou étincelles selon la rareté ;
-  - **emblème** : pastille à la couleur de la faction, en haut à droite (symbole provisoire).
-  Le moteur de relief n'est plus utilisé pour les cartes ; il reste là pour d'autres éléments.
+- `index.html` : la page de l'atelier (la même que l'artefact « Atelier des cartes ») : une carte par
+  rareté sur le fond de la faction choisie ; un clic ouvre la carte en grand, un second la retourne.
+- `carte/cadre.js` : tout le dessin de la carte, en canvas 2D.
+  - **cadre** : base noire, la couleur de la rareté en touches (liserés, filigranes qui s'enrichissent
+    de la très commune à la légendaire) ;
+  - **face** : étoile d'emblème (provisoire) en haut, illustration, nom dans son cadre, puis
+    attaque (losange) · faction · vie (écu), capacité centrée, citation en bas avec son filet ;
+  - **dos** : nom, faction et rareté, description (celle de la fiche du Codex).
 - `carte/factions.js` : factions d'essai (noms et couleurs du Codex).
 
-Ouvrir `carte/index.html` dans Chrome ou Chromium (`?faction=orques-sang`, `?only=rare,epique`).
-Une carte se dessine en quelques millisecondes.
+Ouvrir `index.html` dans un navigateur. Le moteur de relief (`moteur/`) n'est plus utilisé pour les cartes.
