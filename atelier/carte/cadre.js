@@ -364,6 +364,33 @@
     ctx.fillStyle = '#f7f1e6'; ctx.fillText(name, CX, (y0 + y1) / 2 + 1); ctx.restore();
   }
 
+  // Emblème provisoire : une étoile seule, sans pastille, dans la couleur de la rareté.
+  function drawEmblemStar(ctx, rar, x, y) {
+    const R = 15, r = 4.5;
+    const star = () => { ctx.beginPath(); for (let k = 0; k < 8; k += 1) { const a = -Math.PI / 2 + (k / 8) * TAU; const rad = k % 2 ? r : R; const px = x + Math.cos(a) * rad, py = y + Math.sin(a) * rad; if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py); } ctx.closePath(); };
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 6; star(); ctx.fillStyle = '#0c0c0e'; ctx.fill(); ctx.restore();
+    ctx.save(); if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 4 + 6 * rar.glow; }
+    star(); ctx.fillStyle = touchStyle(ctx, rar); ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(x, y, 1.8, 0, TAU); ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill();
+  }
+
+  // Nom de la faction en capitales espacées, entre deux filets fins terminés par un point.
+  function drawFactionName(ctx, rar, name, y) {
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '600 15px "Cinzel", Georgia, serif';
+    const label = name.toUpperCase().split('').join(' ');
+    const w = ctx.measureText(label).width;
+    ctx.fillStyle = 'rgba(244,238,228,0.9)'; ctx.fillText(label, CX, y + 1);
+    const touch = touchStyle(ctx, rar); ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineWidth = 0.9; ctx.globalAlpha = 0.85;
+    const gap = 12, len = Math.max(14, 112 - w / 2 - gap);
+    [-1, 1].forEach((sg) => {
+      const a = CX + sg * (w / 2 + gap), b = a + sg * len;
+      ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(b, y); ctx.stroke();
+      ctx.beginPath(); ctx.arc(a, y, 1.6, 0, TAU); ctx.fill();
+    });
+    ctx.restore();
+  }
+
   // Disposition du croquis, rapportée à 512 × 716 :
   // pastilles du haut (coût, emblème), petite illustration, nom vers 40 %, faction,
   // capacité, citation, pastilles du bas (attaque, vie). Les pastilles sont décalées
@@ -390,23 +417,28 @@
     ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 160);
     drawFrameSingle(ctx, rar, win);
     // Emblème au centre du motif du haut, comme un blason posé sur le cadre.
-    drawEmblemAt(ctx, rar, card.faction, CX, t + 12);
-    // Nom, avec l'attaque et la vie dans les losanges aux deux bouts ; puis la faction seule.
-    drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1, { attack: card.attack, life: card.life });
+    drawEmblemStar(ctx, rar, CX, t + 12);
+    // Nom dans son cadre rectangulaire.
+    drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1);
+    // Sous le nom : attaque à gauche, faction au milieu, vie à droite.
+    const rowY = SKETCH.name.y1 + 44;
+    statDiamond(ctx, rar, CX - 150, rowY, card.attack, 'attaque');
+    statDiamond(ctx, rar, CX + 150, rowY, card.life, 'vie');
+    drawFactionName(ctx, rar, card.faction.short, rowY);
+    // Capacité, centrée.
+    const width = W - 2 * 56;
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.font = '600 14px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = 'rgba(240,234,224,0.78)';
-    ctx.fillText(card.faction.short.toUpperCase().split('').join(' '), CX, SKETCH.catY);
-    // Capacité, filet, citation : alignés à gauche.
-    const left = 52, width = W - 2 * left;
-    ctx.textAlign = 'left';
-    let y = SKETCH.textY;
+    let y = rowY + 66;
     ctx.font = '500 19px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = '#f4efe6';
-    for (const line of wrap(ctx, card.ability, width)) { ctx.fillText(line, left, y); y += 25; }
+    for (const line of wrap(ctx, card.ability, width)) { ctx.fillText(line, CX, y); y += 25; }
+    // En bas de la carte : petit filet centré, puis la citation.
+    ctx.font = 'italic 17px "Alegreya", Georgia, serif';
+    const lines = wrap(ctx, '« ' + card.flavor + ' »', width);
+    let fy = H - t - 34 - (lines.length - 1) * 22;
     ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.globalAlpha = 0.8; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(left, y - 4); ctx.lineTo(left + 110, y - 4); ctx.stroke(); ctx.restore();
-    y += 22;
-    ctx.font = 'italic 17px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.8)';
-    for (const line of wrap(ctx, '« ' + card.flavor + ' »', width)) { ctx.fillText(line, left, y); y += 22; }
+    ctx.beginPath(); ctx.moveTo(CX - 55, fy - 26); ctx.lineTo(CX + 55, fy - 26); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = 'rgba(240,234,224,0.8)';
+    for (const line of lines) { ctx.fillText(line, CX, fy); fy += 22; }
     ctx.restore();
     return out;
   }
