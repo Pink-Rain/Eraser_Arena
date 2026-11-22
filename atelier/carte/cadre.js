@@ -405,13 +405,39 @@
     ctx.restore();
   }
 
+  // Emblème : le logo de la faction (logos.js), dans la couleur de la rareté ; l'étoile s'il n'y en a pas.
+  function drawEmblem(ctx, rar, faction, x, y) {
+    const L = root.Logos;
+    if (!L || !L.has(faction.id)) { drawEmblemStar(ctx, rar, x, y); return; }
+    const stops = rar.rank === 5 ? [[0, '#fff0bd'], [0.35, '#e3ad48'], [0.7, '#ffe39a'], [1, '#c88a2a']] : [[0, rar.lite], [1, rar.c]];
+    L.draw(ctx, faction.id, x, y + 4, 42, stops, 'rgba(0,0,0,0.9)', rar.glow ? rar.c : null);
+  }
+
+  // Titre honorifique sous le nom, en italique, entre deux filets fins terminés par un point.
+  function drawHonorific(ctx, rar, text, y) {
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    let size = 19; const maxW = 200;
+    ctx.font = `italic ${size}px "Alegreya", Georgia, serif`;
+    while (ctx.measureText(text).width > maxW && size > 12) { size -= 1; ctx.font = `italic ${size}px "Alegreya", Georgia, serif`; }
+    const w = ctx.measureText(text).width;
+    ctx.fillStyle = 'rgba(244,238,228,0.92)'; ctx.fillText(text, CX, y);
+    const touch = touchStyle(ctx, rar); ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineWidth = 0.9; ctx.globalAlpha = 0.85;
+    const gap = 10, end = 112;
+    [-1, 1].forEach((sg) => {
+      const a = CX + sg * (w / 2 + gap), b = CX + sg * end;
+      if (Math.abs(b - CX) - Math.abs(a - CX) > 6) { ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(b, y); ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(a, y, 1.6, 0, TAU); ctx.fill();
+    });
+    ctx.restore();
+  }
+
   // Disposition du croquis, rapportée à 512 × 716 :
   // pastilles du haut (coût, emblème), petite illustration, nom vers 40 %, faction,
   // capacité, citation, pastilles du bas (attaque, vie). Les pastilles sont décalées
   // vers le centre pour ne jamais couvrir les ornements d'angle.
   const SKETCH = { padX: 118, topY: 52, name: { y0: 266, y1: 316 }, catY: 346, textY: 392, botY: H - 52 };
 
-  // card : { name, rarity, faction, ability, flavor, attack, life }
+  // card : { name, honor, rarity, faction, ability, flavor, attack, life, description }
   function renderCard(card) {
     const rar = RARITIES[card.rarity]; const t = rar.t;
     const win = { x0: t, y0: t, x1: W - t, y1: H - t, r: 10 };
@@ -431,14 +457,14 @@
     ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 160);
     drawFrameSingle(ctx, rar, win);
     // Emblème au centre du motif du haut, comme un blason posé sur le cadre.
-    drawEmblemStar(ctx, rar, CX, t + 12);
+    drawEmblem(ctx, rar, card.faction, CX, t + 12);
     // Nom dans son cadre rectangulaire.
     drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1);
     // Sous le nom : attaque à gauche, faction au milieu, vie à droite.
     const rowY = SKETCH.name.y1 + 44;
     statDiamond(ctx, rar, CX - 150, rowY, card.attack, 'attaque');
     statDiamond(ctx, rar, CX + 150, rowY, card.life, 'vie');
-    drawFactionName(ctx, rar, card.faction.short, rowY);
+    drawHonorific(ctx, rar, card.honor || '', rowY);
     // Capacité, centrée.
     const width = W - 2 * 56;
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
@@ -469,7 +495,7 @@
     g.addColorStop(0, rgb(c, 0.45)); g.addColorStop(1, rgb(c, 0.12));
     ctx.fillStyle = g; path(ctx, rr(win)); ctx.fill();
     drawFrameSingle(ctx, rar, win);
-    drawEmblemStar(ctx, rar, CX, t + 12);
+    drawEmblem(ctx, rar, card.faction, CX, t + 12);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     let size = 30; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`;
     while (ctx.measureText(card.name).width > W - 120 && size > 16) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }

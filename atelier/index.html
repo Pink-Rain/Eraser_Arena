@@ -22,6 +22,10 @@
   figure { margin: 0; display: grid; gap: 6px; justify-items: center; min-width: 0; }
   .thumb { display: block; width: 100%; max-width: 320px; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 4.5%; }
   .thumb canvas { width: 100%; height: auto; display: block; }
+  h2 { font: 700 1.2rem "Cinzel", Georgia, serif; margin: 32px 0 12px; }
+  .logos { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 14px 10px; }
+  .logo { display: grid; justify-items: center; gap: 4px; text-align: center; font-size: 13px; color: var(--dim); min-width: 0; }
+  .logo canvas { width: 72px; height: 72px; }
   figcaption { font: 600 14px "Cinzel", Georgia, serif; color: var(--dim); }
 
   dialog { border: 0; padding: 0; background: transparent; max-width: none; max-height: none; width: 100%; height: 100%; overflow: hidden; }
@@ -39,9 +43,11 @@
 </style>
 
 <h1>Atelier des cartes</h1>
-<p class="lede">Une carte par rareté, sur le fond de la faction choisie. Chaque emplacement porte son nom : titre, faction, capacité, citation, attaque (losange) et vie (écu). Touche une carte pour l'ouvrir en grand, puis touche-la pour la retourner.</p>
+<p class="lede">Une carte par rareté, sur le fond de la faction choisie. En haut, le logo de la faction. Chaque emplacement porte son nom : titre, titre honorifique, capacité, citation, attaque (losange) et vie (écu). Touche une carte pour l'ouvrir en grand, puis touche-la pour la retourner.</p>
 <div class="bar"><label for="faction">Faction</label> <select id="faction"></select></div>
 <div class="grid" id="grid"></div>
+<h2>Logos des factions</h2>
+<div class="logos" id="logos"></div>
 
 <dialog id="viewer" aria-label="Carte en grand">
   <div class="stage" id="stage">
@@ -54,6 +60,7 @@
   </div>
 </dialog>
 
+<script src="carte/logos.js"></script>
 <script src="carte/cadre.js"></script>
 <script src="carte/factions.js"></script>
 <script>
@@ -61,7 +68,7 @@
   FACTIONS.forEach((f) => { const o = document.createElement('option'); o.value = f.id; o.textContent = ' '.repeat(f.depth || 0) + f.name; sel.append(o); });
   sel.value = 'orques-sang';
   // Textes d'emplacement : chaque zone dit ce qu'elle contiendra.
-  const cardFor = (rarity, faction) => ({ name: 'Titre', rarity, faction, ability: 'Capacité', flavor: 'Citation', attack: 'A', life: 'V', description: 'Description' });
+  const cardFor = (rarity, faction) => ({ name: 'Titre', honor: 'Titre honorifique', rarity, faction, ability: 'Capacité', flavor: 'Citation', attack: 'A', life: 'V', description: 'Description' });
 
   const viewer = document.getElementById('viewer'), big = document.getElementById('big');
   function open(card) {
@@ -93,7 +100,14 @@
   (async () => {
     try { await Promise.all([document.fonts.load('700 26px "Cinzel"'), document.fonts.load('600 15px "Cinzel"'), document.fonts.load('500 19px "Alegreya Sans"'), document.fonts.load('italic 17px "Alegreya"')]); } catch (e) {}
     draw();
-    document.title = document.title; // prêt
+    const lg = document.getElementById('logos');
+    for (const f of FACTIONS) {
+      const d = document.createElement('div'); d.className = 'logo';
+      const c = document.createElement('canvas'); c.width = c.height = 144;
+      Logos.draw(c.getContext('2d'), f.id, 72, 72, 120, [[0, '#fff0bd'], [0.5, '#e3ad48'], [1, '#c88a2a']], null);
+      c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Logo ' + f.name);
+      const n = document.createElement('span'); n.textContent = f.name; d.append(c, n); lg.append(d);
+    }
   })();
 </script>
 
