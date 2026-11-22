@@ -339,9 +339,9 @@
       // Très commune : un seul pendentif au centre du haut.
       pendant(CX, t / 2 + 2, 0, 1, t / 2 + 6, 32);
     } else if (rk === 1) {
-      // Commune : deux pendentifs aux flancs, à mi-hauteur.
-      pendant(t / 2, H / 2, 1, 0, t / 2 + 6, 30);
-      pendant(W - t / 2, H / 2, -1, 0, t / 2 + 6, 30);
+      // Commune : deux pendentifs suspendus au bord du haut, près des angles.
+      pendant(win.x0 + 38, t / 2 + 2, 0, 1, t / 2 + 6, 30);
+      pendant(win.x1 - 38, t / 2 + 2, 0, 1, t / 2 + 6, 30);
     } else if (rk === 2) {
       // Rare : quatre logos logés dans les angles, après l'équerre ; ceux du bas tournés comme dans un jeu de cartes.
       const o = 30, sz = 28;
