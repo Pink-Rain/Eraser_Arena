@@ -17,12 +17,13 @@
 <h1>Cadres des cartes</h1>
 <div class="grid" id="grid"></div>
 <script src="cadre.js"></script>
+<script src="factions.js"></script>
 <script>
   const q = new URLSearchParams(location.search); const only = q.get('only') ? q.get('only').split(',') : null;
   for (const key of Cadre.ORDER) {
     if (only && !only.includes(key)) continue;
     const fig = document.createElement('figure'); const cap = document.createElement('figcaption');
-    cap.textContent = Cadre.RARITIES[key].label; fig.append(Cadre.renderFrame(key), cap); document.getElementById('grid').append(fig);
+    cap.textContent = Cadre.RARITIES[key].label; fig.append(Cadre.renderFrame(key, FACTIONS.find((f) => f.id === (q.get('faction') || 'orques-sang'))), cap); document.getElementById('grid').append(fig);
   }
   document.title = 'done';
 </script>

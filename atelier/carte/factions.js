@@ -1,9 +1,9 @@
 // Factions d'essai, recopiées du Codex d'Eraser (nom et couleur, orthographe du Codex).
 // Plus tard, ces données viendront d'un fichier de données du jeu, séparé du code.
 window.FACTIONS = [
-  { id: 'automes', name: 'Haut-hommes', color: '#8a6a2e' },
-  { id: 'valhelm', name: 'Humaines de Valhelm', color: '#e0c060' },
-  { id: 'sirois', name: "Cir'hois", color: '#a68a64' },
+  { id: 'automes', name: 'Haut-hommes', color: '#a68a64' },
+  { id: 'valhelm', name: 'Humaines de Valhelm', color: '#5a2a4e' },
+  { id: 'sirois', name: "Cir'hois", color: '#2f6b5e' },
   { id: 'orques-sang', name: 'Orcs du sang', color: '#8e2a1f' },
   { id: 'orques-arides', name: 'Orcs des terres arides', color: '#e0955a' },
   { id: 'orques-forets', name: 'Orcs des forêts', color: '#2f4426' },

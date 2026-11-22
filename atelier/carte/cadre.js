@@ -189,16 +189,35 @@
     ctx.restore();
   }
 
-  // Le cadre seul, sur des fenêtres neutres (gris), pour le juger sans le reste.
-  function renderFrame(rarity) {
+  /* ---------- fond de faction (simple) ---------- */
+  const hex = (c) => { const v = parseInt(c.slice(1), 16); return [(v >> 16) & 255, (v >> 8) & 255, v & 255]; };
+  const rgb = (c, k) => `rgb(${Math.min(255, c[0] * k) | 0},${Math.min(255, c[1] * k) | 0},${Math.min(255, c[2] * k) | 0})`;
+  // Portrait : la couleur de la faction au centre, qui s'assombrit vers les bords.
+  // Texte : la même couleur, plus sombre, pour la lisibilité.
+  function drawFond(ctx, rar, faction) {
+    const { art, text } = windows(rar);
+    if (!faction) {
+      const ga = ctx.createLinearGradient(0, art.y0, 0, art.y1); ga.addColorStop(0, '#5a5961'); ga.addColorStop(1, '#3b3a41');
+      ctx.fillStyle = ga; path(ctx, rr(art)); ctx.fill();
+      ctx.fillStyle = '#2f2e34'; path(ctx, rr(text)); ctx.fill();
+      return;
+    }
+    const c = hex(faction.color); const ay = (art.y0 + art.y1) / 2;
+    const g = ctx.createRadialGradient(CX, ay - 40, 10, CX, ay, 340);
+    g.addColorStop(0, rgb(c, 1.1)); g.addColorStop(0.6, rgb(c, 0.7)); g.addColorStop(1, rgb(c, 0.35));
+    ctx.fillStyle = g; path(ctx, rr(art)); ctx.fill();
+    const t = ctx.createLinearGradient(0, text.y0, 0, text.y1);
+    t.addColorStop(0, rgb(c, 0.5)); t.addColorStop(1, rgb(c, 0.3));
+    ctx.fillStyle = t; path(ctx, rr(text)); ctx.fill();
+  }
+
+  // Le cadre sur le fond de la faction (ou sur des fenêtres grises si aucune faction).
+  function renderFrame(rarity, faction) {
     const rar = RARITIES[rarity];
     const out = document.createElement('canvas'); out.width = W; out.height = H;
     const ctx = out.getContext('2d');
     ctx.save(); path(ctx, rr(CARD)); ctx.clip();
-    const { art, text } = windows(rar);
-    const ga = ctx.createLinearGradient(0, art.y0, 0, art.y1); ga.addColorStop(0, '#5a5961'); ga.addColorStop(1, '#3b3a41');
-    ctx.fillStyle = ga; path(ctx, rr(art)); ctx.fill();
-    ctx.fillStyle = '#2f2e34'; path(ctx, rr(text)); ctx.fill();
+    drawFond(ctx, rar, faction);
     drawFrame(ctx, rar);
     ctx.restore();
     return out;
