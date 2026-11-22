@@ -293,40 +293,97 @@
     ctx.closePath(); ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fill();
   }
 
+  /* ---------- carte selon le croquis : un seul contour, tout à l'intérieur ---------- */
+  // Cadre à une seule fenêtre (toute la carte) : même style, base noire et touches de rareté.
+  function drawFrameSingle(ctx, rar, win) {
+    path(ctx, rr(CARD), rr(win));
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a191e'); g.addColorStop(1, '#08080a');
+    ctx.fillStyle = g; ctx.fill('evenodd');
+    const touch = touchStyle(ctx, rar);
+    ctx.save();
+    ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 3 + 5 * rar.glow; }
+    ctx.globalAlpha = rar.rank <= 1 ? 0.55 : 0.8; ctx.lineWidth = 1; path(ctx, rr(CARD, 3.5)); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.lineWidth = rar.rank <= 1 ? 1 : 1.4; path(ctx, rr(win, -2)); ctx.stroke();
+    if (rar.double) { ctx.lineWidth = 0.8; ctx.globalAlpha = 0.7; path(ctx, rr(win, -5.5)); ctx.stroke(); ctx.globalAlpha = 1; }
+    const k = 1;
+    corner(ctx, rar, win.x0 + k, win.y0 + k, 1, 1); corner(ctx, rar, win.x1 - k, win.y0 + k, -1, 1);
+    corner(ctx, rar, win.x0 + k, win.y1 - k, 1, -1); corner(ctx, rar, win.x1 - k, win.y1 - k, -1, -1);
+    midOrnament(ctx, rar, CX, rar.t / 2, 0);
+    midOrnament(ctx, rar, CX, H - rar.t / 2, Math.PI);
+    midOrnament(ctx, rar, rar.t / 2, H / 2, -Math.PI / 2, true);
+    midOrnament(ctx, rar, W - rar.t / 2, H / 2, Math.PI / 2, true);
+    ctx.restore();
+  }
+
+  // Pastille de coût (en pointillés : on ne sait pas encore s'il y aura un coût).
+  function drawCostDot(ctx, rar, x, y) {
+    const r = 22;
+    ctx.save(); ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = 'rgba(10,10,12,0.75)'; ctx.fill();
+    ctx.setLineDash([3, 3]); ctx.lineWidth = 1.4; ctx.strokeStyle = touchStyle(ctx, rar); ctx.stroke(); ctx.setLineDash([]);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '700 20px "Cinzel", Georgia, serif'; ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillText('?', x, y + 1); ctx.restore();
+  }
+
+  // Cadre rectangulaire du nom, comme dans le croquis.
+  function drawNameBox(ctx, rar, name, y0, y1) {
+    const x0 = 64, x1 = W - 64;
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
+    const g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#1d1c22'); g.addColorStop(1, '#09090b');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.fill(); ctx.restore();
+    const touch = touchStyle(ctx, rar);
+    ctx.save(); ctx.strokeStyle = touch; ctx.fillStyle = touch; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 2 + 4 * rar.glow; }
+    ctx.lineWidth = 1.5; ctx.strokeRect(x0 + 0.5, y0 + 0.5, x1 - x0 - 1, y1 - y0 - 1);
+    if (rar.double) { ctx.lineWidth = 0.7; ctx.globalAlpha = 0.7; ctx.strokeRect(x0 + 4, y0 + 4, x1 - x0 - 8, y1 - y0 - 8); ctx.globalAlpha = 1; }
+    [-1, 1].forEach((s) => diamond(ctx, s < 0 ? x0 : x1, (y0 + y1) / 2, 6, touch));
+    ctx.restore();
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    let size = 26; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`;
+    while (ctx.measureText(name).width > x1 - x0 - 40 && size > 14) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }
+    ctx.fillStyle = '#f7f1e6'; ctx.fillText(name, CX, (y0 + y1) / 2 + 1); ctx.restore();
+  }
+
   // card : { name, rarity, faction, category, ability, flavor, attack, life }
   function renderCard(card) {
-    const rar = RARITIES[card.rarity];
-    const out = renderFrame(card.rarity, card.faction);
+    const rar = RARITIES[card.rarity]; const t = rar.t;
+    const win = { x0: t, y0: t, x1: W - t, y1: H - t, r: 10 };
+    const out = document.createElement('canvas'); out.width = W; out.height = H;
     const ctx = out.getContext('2d');
-    const { art, text } = windows(rar);
-    const junction = (art.y1 + text.y0) / 2;
-    ctx.save(); ctx.beginPath(); rr(CARD)(ctx); ctx.clip();
-    // Voile en bas de l'illustration, pour poser le bandeau.
-    const fade = ctx.createLinearGradient(0, art.y1 - 70, 0, art.y1);
-    fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, 'rgba(0,0,0,0.45)');
-    ctx.save(); ctx.beginPath(); rr(art)(ctx); ctx.clip(); ctx.fillStyle = fade; ctx.fillRect(art.x0, art.y1 - 70, art.x1 - art.x0, 70); ctx.restore();
-    drawFrame(ctx, rar); // redessine le cadre par-dessus le voile
+    ctx.save(); path(ctx, rr(CARD)); ctx.clip();
+    // Fond : la couleur de la faction derrière l'illustration, qui descend vers le sombre pour le texte.
+    const c = hex(card.faction.color);
+    const g = ctx.createRadialGradient(CX, 190, 10, CX, 230, 360);
+    g.addColorStop(0, rgb(c, 1.1)); g.addColorStop(0.55, rgb(c, 0.7)); g.addColorStop(1, rgb(c, 0.3));
+    ctx.fillStyle = g; path(ctx, rr(win)); ctx.fill();
+    const dark = ctx.createLinearGradient(0, 300, 0, 470);
+    dark.addColorStop(0, 'rgba(8,8,10,0)'); dark.addColorStop(1, 'rgba(8,8,10,0.82)');
+    ctx.fillStyle = dark; ctx.fillRect(0, 300, W, H - 300);
+    // Repère de l'illustration (provisoire).
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 15px "Alegreya Sans", system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 230);
+    drawFrameSingle(ctx, rar, win);
+    // En haut : coût (à décider) et emblème.
+    drawCostDot(ctx, rar, t + 34, t + 34);
     drawEmblemDot(ctx, rar, card.faction);
-    drawNameBanner(ctx, rar, card.name, junction);
-    // Catégorie.
+    // Nom, puis catégorie.
+    drawNameBox(ctx, rar, card.name, 384, 434);
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.font = '600 13px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = 'rgba(240,234,224,0.7)';
-    const cat = card.category.toUpperCase().split('').join(' ');
-    ctx.fillText(cat, CX, junction + 44);
-    // Capacité spéciale.
-    let y = junction + 84;
+    ctx.font = '600 13px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = 'rgba(240,234,224,0.72)';
+    ctx.fillText(card.category.toUpperCase().split('').join(' '), CX, 462);
+    // Capacité, filet, citation : alignés à gauche, comme dans le croquis.
+    const left = t + 28, width = W - 2 * left;
+    ctx.textAlign = 'left';
+    let y = 504;
     ctx.font = '500 19px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = '#f4efe6';
-    for (const line of wrap(ctx, card.ability, text.x1 - text.x0 - 110)) { ctx.fillText(line, CX, y); y += 24; }
-    // Filet puis citation d'ambiance.
-    y += 6;
-    ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.globalAlpha = 0.7; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(CX - 40, y - 8); ctx.lineTo(CX + 40, y - 8); ctx.stroke(); ctx.restore();
-    y += 18;
-    ctx.font = 'italic 17px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.75)';
-    for (const line of wrap(ctx, '« ' + card.flavor + ' »', text.x1 - text.x0 - 130)) { ctx.fillText(line, CX, y); y += 21; }
-    // Attaque et vie, dans les coins du bas.
-    drawStat(ctx, rar, text.x0 + 26, text.y1 - 26, card.attack, 'attaque');
-    drawStat(ctx, rar, text.x1 - 26, text.y1 - 26, card.life, 'vie');
+    for (const line of wrap(ctx, card.ability, width)) { ctx.fillText(line, left, y); y += 25; }
+    ctx.save(); ctx.strokeStyle = touchStyle(ctx, rar); ctx.globalAlpha = 0.8; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(left, y - 4); ctx.lineTo(left + 110, y - 4); ctx.stroke(); ctx.restore();
+    y += 22;
+    ctx.font = 'italic 17px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.78)';
+    for (const line of wrap(ctx, '« ' + card.flavor + ' »', width)) { ctx.fillText(line, left, y); y += 22; }
+    // En bas : attaque à gauche, vie à droite.
+    drawStat(ctx, rar, t + 36, H - t - 36, card.attack, 'attaque');
+    drawStat(ctx, rar, W - t - 36, H - t - 36, card.life, 'vie');
     ctx.restore();
     return out;
   }
