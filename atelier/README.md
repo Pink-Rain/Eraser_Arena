@@ -6,12 +6,14 @@ Le labo où on fabrique les visuels des cartes, hors de l'application.
   (le moteur de relief d'Eraser). Changements : la surface peut être rectangulaire
   (`Relief.setSize(largeur, hauteur)`), et `Relief.distanceField(masque)` donne des biseaux
   sur n'importe quelle forme.
-- `carte/carte.js` fabrique une carte au format TCG (63 × 88 mm, rendu en 512 × 716), style TCG moderne :
-  - **cadre** : métal lisse à la couleur de la rareté (gris foncé, gris, vert, bleu, violet, doré),
-    ornements qui montent avec elle (coins, pierres latérales, crête et ailes, couronne) ;
-  - **fond** : couleur de la faction, peint à plat ; reflets et motifs discrets selon la rareté ;
-  - **emblème** : médaillon émaillé à la couleur de la faction, en haut à droite (symbole provisoire).
+- `carte/carte.js` dessine une carte au format TCG (63 × 88 mm, rendu en 512 × 716) en canvas 2D,
+  style moderne en aplats (pas de relief, pas de métal) :
+  - **cadre** : couleur pleine de la rareté en dégradé (gris foncé, gris, vert, bleu, violet, doré),
+    lueur dans les fenêtres, encoches, pierres latérales, chevron (épique) ou couronne (légendaire) ;
+  - **fond** : couleur de la faction en halo ; trame, rayons ou étincelles selon la rareté ;
+  - **emblème** : pastille à la couleur de la faction, en haut à droite (symbole provisoire).
+  Le moteur de relief n'est plus utilisé pour les cartes ; il reste là pour d'autres éléments.
 - `carte/factions.js` : factions d'essai (noms et couleurs du Codex).
 
 Ouvrir `carte/index.html` dans Chrome ou Chromium (`?faction=orques-sang`, `?only=rare,epique`).
-Une carte se rend en 0,5 à 1 s sur ordinateur : dans le jeu, les images seront générées une fois puis gardées.
+Une carte se dessine en quelques millisecondes.
