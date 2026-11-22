@@ -11,7 +11,7 @@ Le labo où on fabrique les visuels des cartes, hors de l'application.
 - `carte/cadre.js` : tout le dessin de la carte, en canvas 2D.
   - **cadre** : base noire, la couleur de la rareté en touches (liserés, filigranes qui s'enrichissent
     de la très commune à la légendaire) ;
-  - **face** : logo de la faction en haut, illustration, nom dans son cadre, puis
+  - **face** : logo de la faction niché dans les quatre angles du cadre, illustration, nom dans son cadre, puis
     attaque (losange) · titre honorifique · vie (écu), capacité centrée, citation en bas avec son filet ;
   - **dos** : nom, faction et rareté, description (celle de la fiche du Codex).
 - `carte/logos.js` : les 21 logos des factions, en traits fins dans le style des filigranes du cadre

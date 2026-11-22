@@ -296,25 +296,44 @@
 
   /* ---------- carte selon le croquis : un seul contour, tout à l'intérieur ---------- */
   // Cadre à une seule fenêtre (toute la carte) : même style, base noire et touches de rareté.
-  function drawFrameSingle(ctx, rar, win) {
+  // Cadre à une seule fenêtre (toute la carte) : base noire et touches de rareté.
+  // Avec une faction, son logo est niché dans chacun des quatre angles : les filigranes
+  // d'angle s'écartent autour de lui et repartent de part et d'autre, comme s'il en faisait partie.
+  const LOGO_SIZE = 32, LOGO_OFF = 18, LOGO_GAP = 19;
+  function logoSpots(win) {
+    const o = LOGO_OFF;
+    return [[win.x0 + o, win.y0 + o], [win.x1 - o, win.y0 + o], [win.x0 + o, win.y1 - o], [win.x1 - o, win.y1 - o]];
+  }
+  function drawFrameSingle(ctx, rar, win, faction) {
     path(ctx, rr(CARD), rr(win));
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a191e'); g.addColorStop(1, '#08080a');
     ctx.fillStyle = g; ctx.fill('evenodd');
-    const touch = touchStyle(ctx, rar);
-    ctx.save();
-    ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 3 + 5 * rar.glow; }
-    ctx.globalAlpha = rar.rank <= 1 ? 0.55 : 0.8; ctx.lineWidth = 1; path(ctx, rr(CARD, 3.5)); ctx.stroke(); ctx.globalAlpha = 1;
-    ctx.lineWidth = rar.rank <= 1 ? 1 : 1.4; path(ctx, rr(win, -2)); ctx.stroke();
-    if (rar.double) { ctx.lineWidth = 0.8; ctx.globalAlpha = 0.7; path(ctx, rr(win, -5.5)); ctx.stroke(); ctx.globalAlpha = 1; }
+    // Les touches de couleur sont dessinées sur un calque à part, pour pouvoir les écarter autour des logos.
+    const layer = document.createElement('canvas'); layer.width = W; layer.height = H;
+    const lc = layer.getContext('2d');
+    const touch = touchStyle(lc, rar);
+    lc.strokeStyle = touch; lc.fillStyle = touch; lc.lineCap = 'round'; lc.lineJoin = 'round';
+    if (rar.glow) { lc.shadowColor = rar.c; lc.shadowBlur = 3 + 5 * rar.glow; }
+    lc.globalAlpha = rar.rank <= 1 ? 0.55 : 0.8; lc.lineWidth = 1; path(lc, rr(CARD, 3.5)); lc.stroke(); lc.globalAlpha = 1;
+    lc.lineWidth = rar.rank <= 1 ? 1 : 1.4; path(lc, rr(win, -2)); lc.stroke();
+    if (rar.double) { lc.lineWidth = 0.8; lc.globalAlpha = 0.7; path(lc, rr(win, -5.5)); lc.stroke(); lc.globalAlpha = 1; }
     const k = 1;
-    corner(ctx, rar, win.x0 + k, win.y0 + k, 1, 1); corner(ctx, rar, win.x1 - k, win.y0 + k, -1, 1);
-    corner(ctx, rar, win.x0 + k, win.y1 - k, 1, -1); corner(ctx, rar, win.x1 - k, win.y1 - k, -1, -1);
-    midOrnament(ctx, rar, CX, rar.t / 2, 0);
-    midOrnament(ctx, rar, CX, H - rar.t / 2, Math.PI);
-    midOrnament(ctx, rar, rar.t / 2, H / 2, -Math.PI / 2, true);
-    midOrnament(ctx, rar, W - rar.t / 2, H / 2, Math.PI / 2, true);
-    ctx.restore();
+    corner(lc, rar, win.x0 + k, win.y0 + k, 1, 1); corner(lc, rar, win.x1 - k, win.y0 + k, -1, 1);
+    corner(lc, rar, win.x0 + k, win.y1 - k, 1, -1); corner(lc, rar, win.x1 - k, win.y1 - k, -1, -1);
+    midOrnament(lc, rar, CX, rar.t / 2, 0);
+    midOrnament(lc, rar, CX, H - rar.t / 2, Math.PI);
+    midOrnament(lc, rar, rar.t / 2, H / 2, -Math.PI / 2, true);
+    midOrnament(lc, rar, W - rar.t / 2, H / 2, Math.PI / 2, true);
+    const withLogo = faction && root.Logos && root.Logos.has(faction.id);
+    if (withLogo) {
+      lc.shadowBlur = 0; lc.globalCompositeOperation = 'destination-out';
+      for (const [x, y] of logoSpots(win)) { const gr = lc.createRadialGradient(x, y, LOGO_GAP - 3, x, y, LOGO_GAP + 2); gr.addColorStop(0, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)'); lc.fillStyle = gr; lc.beginPath(); lc.arc(x, y, LOGO_GAP + 2, 0, TAU); lc.fill(); }
+    }
+    ctx.drawImage(layer, 0, 0);
+    if (withLogo) {
+      const stops = rar.rank === 5 ? [[0, '#fff0bd'], [0.35, '#e3ad48'], [0.7, '#ffe39a'], [1, '#c88a2a']] : [[0, rar.lite], [1, rar.c]];
+      for (const [x, y] of logoSpots(win)) root.Logos.draw(ctx, faction.id, x, y, LOGO_SIZE, stops, 'rgba(0,0,0,0.85)', rar.glow ? rar.c : null);
+    }
   }
 
   // Pastille de coût (en pointillés : on ne sait pas encore s'il y aura un coût).
@@ -455,9 +474,8 @@
     // Repère de l'illustration (provisoire), sans cadre : l'image se fond dans la carte.
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 15px "Alegreya Sans", system-ui, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 160);
-    drawFrameSingle(ctx, rar, win);
+    drawFrameSingle(ctx, rar, win, card.faction);
     // Emblème au centre du motif du haut, comme un blason posé sur le cadre.
-    drawEmblem(ctx, rar, card.faction, CX, t + 12);
     // Nom dans son cadre rectangulaire.
     drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1);
     // Sous le nom : attaque à gauche, faction au milieu, vie à droite.
@@ -494,8 +512,7 @@
     const g = ctx.createRadialGradient(CX, H / 2, 20, CX, H / 2, 420);
     g.addColorStop(0, rgb(c, 0.45)); g.addColorStop(1, rgb(c, 0.12));
     ctx.fillStyle = g; path(ctx, rr(win)); ctx.fill();
-    drawFrameSingle(ctx, rar, win);
-    drawEmblem(ctx, rar, card.faction, CX, t + 12);
+    drawFrameSingle(ctx, rar, win, card.faction);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     let size = 30; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`;
     while (ctx.measureText(card.name).width > W - 120 && size > 16) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }
