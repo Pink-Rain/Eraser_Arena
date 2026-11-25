@@ -297,7 +297,8 @@
   /* ---------- carte selon le croquis : un seul contour, tout à l'intérieur ---------- */
   // Cadre à une seule fenêtre (toute la carte) : même style, base noire et touches de rareté.
   // Cadre à une seule fenêtre (toute la carte) : base noire et touches de rareté.
-  function drawFrameSingle(ctx, rar, win, faction) {
+  // faction2 : seconde faction des cartes bicolores (facultative).
+  function drawFrameSingle(ctx, rar, win, faction, faction2) {
     path(ctx, rr(CARD), rr(win));
     const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a191e'); g.addColorStop(1, '#08080a');
     ctx.fillStyle = g; ctx.fill('evenodd');
@@ -316,16 +317,20 @@
     midOrnament(ctx, rar, rar.t / 2, H / 2, -Math.PI / 2, true);
     midOrnament(ctx, rar, W - rar.t / 2, H / 2, Math.PI / 2, true);
     ctx.restore();
-    if (faction && root.Logos && root.Logos.has(faction.id)) drawFrameLogos(ctx, rar, win, faction.id);
+    const ids = [faction, faction2].filter((f) => f && root.Logos && root.Logos.has(f.id)).map((f) => f.id);
+    if (ids.length) drawFrameLogos(ctx, rar, win, ids);
   }
 
   /* ---------- logos de faction, liés au cadre (une mise en scène par rareté) ---------- */
   // Rien n'est effacé : les logos s'accrochent au cadre par un fil ou se logent dans un espace libre.
-  function drawFrameLogos(ctx, rar, win, id) {
-    const t = rar.t, rk = rar.rank, L = rar.corner;
+  // ids : un logo, ou deux pour une carte bicolore. Les logos alternent : la première faction
+  // à gauche, la seconde à droite, comme le fond.
+  function drawFrameLogos(ctx, rar, win, ids) {
+    const t = rar.t, rk = rar.rank, L = rar.corner, two = ids.length > 1;
+    let k = 0; const next = () => ids[(k++) % ids.length];
     const stops = rk === 5 ? [[0, '#fff0bd'], [0.35, '#e3ad48'], [0.7, '#ffe39a'], [1, '#c88a2a']] : [[0, rar.lite], [1, rar.c]];
     const touch = touchStyle(ctx, rar);
-    const logo = (x, y, size, rot = 0) => { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); root.Logos.draw(ctx, id, 0, 0, size, stops, 'rgba(0,0,0,0.7)', rar.glow ? rar.c : null); ctx.restore(); };
+    const logo = (x, y, size, rot = 0, id = next()) => { ctx.save(); ctx.translate(x, y); ctx.rotate(rot); root.Logos.draw(ctx, id, 0, 0, size, stops, 'rgba(0,0,0,0.7)', rar.glow ? rar.c : null); ctx.restore(); };
     const line = (pts, w = 0.9) => { ctx.save(); ctx.strokeStyle = touch; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.globalAlpha = 0.9; if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 3; } ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); ctx.restore(); };
     const bead = (x, y, r = 1.4) => { ctx.save(); ctx.fillStyle = touch; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill(); ctx.restore(); };
     // Pendentif : un fil part de (x0, y0) sur le cadre et le logo pend au bout, tourné selon la direction du fil.
@@ -337,7 +342,8 @@
     };
     if (rk === 0) {
       // Très commune : un seul pendentif au centre du haut.
-      pendant(CX, t / 2 + 2, 0, 1, t / 2 + 6, 32);
+      if (two) { pendant(CX - 24, t / 2 + 2, 0, 1, t / 2 + 6, 30); pendant(CX + 24, t / 2 + 2, 0, 1, t / 2 + 6, 30); }
+      else pendant(CX, t / 2 + 2, 0, 1, t / 2 + 6, 32);
     } else if (rk === 1) {
       // Commune : deux pendentifs suspendus au bord du haut, près des angles.
       pendant(win.x0 + 38, t / 2 + 2, 0, 1, t / 2 + 6, 30);
@@ -365,13 +371,12 @@
       });
       pendant(CX, t / 2 + 6, 0, 1, t / 2 + 4, 36);
     } else {
-      // Légendaire : grand logo sous la crête, couronné d'un arc de perles ; deux pendentifs aux flancs.
-      const cy = t + 44, size = 46;
-      for (let i = 0; i < 11; i += 1) { const a = Math.PI + (i / 10) * Math.PI; bead(CX + Math.cos(a) * 36, cy + Math.sin(a) * 36 + 4, i % 2 ? 1.3 : 2); }
-      line([[CX, t / 2 + 8], [CX, cy - 33]]);
-      logo(CX, cy + 2, size);
-      pendant(t / 2 + 4, H / 2, 1, 0, t / 2 + 4, 32);
-      pendant(W - t / 2 - 4, H / 2, -1, 0, t / 2 + 4, 32);
+      // Légendaire : grand logo sous la crête, couronné d'un arc de perles (deux logos côte à côte si bicolore).
+      const cy = t + 44, size = 46, R = two ? 44 : 36;
+      for (let i = 0; i < 11; i += 1) { const a = Math.PI + (i / 10) * Math.PI; bead(CX + Math.cos(a) * R, cy + Math.sin(a) * R + 4, i % 2 ? 1.3 : 2); }
+      line([[CX, t / 2 + 8], [CX, cy - R + 3]]);
+      if (two) { logo(CX - 21, cy + 2, 36); logo(CX + 21, cy + 2, 36); }
+      else logo(CX, cy + 2, size);
     }
   }
 
@@ -451,6 +456,7 @@
     ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.font = '600 15px "Cinzel", Georgia, serif';
     const label = name.toUpperCase().split('').join(' ');
+    let fs = 15; while (ctx.measureText(label).width > W - 120 && fs > 10) { fs -= 1; ctx.font = `600 ${fs}px "Cinzel", Georgia, serif`; }
     const w = ctx.measureText(label).width;
     ctx.fillStyle = 'rgba(244,238,228,0.9)'; ctx.fillText(label, CX, y + 1);
     const touch = touchStyle(ctx, rar); ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineWidth = 0.9; ctx.globalAlpha = 0.85;
@@ -510,7 +516,20 @@
   // vers le centre pour ne jamais couvrir les ornements d'angle.
   const SKETCH = { padX: 118, topY: 52, name: { y0: 266, y1: 316 }, catY: 346, textY: 392, botY: H - 52 };
 
-  // card : { name, honor, rarity, faction, ability, flavor, attack, life, description }
+  // Fond de faction ; pour une carte bicolore, la seconde couleur prend la moitié droite
+  // avec une transition douce au centre.
+  function paintFond(ctx, win, card, paintOne) {
+    paintOne(ctx, hex(card.faction.color));
+    if (!card.faction2) return;
+    const off = document.createElement('canvas'); off.width = W; off.height = H; const oc = off.getContext('2d');
+    paintOne(oc, hex(card.faction2.color));
+    oc.globalCompositeOperation = 'destination-in';
+    const m = oc.createLinearGradient(W * 0.32, 0, W * 0.68, 0); m.addColorStop(0, 'rgba(0,0,0,0)'); m.addColorStop(1, '#000');
+    oc.fillStyle = m; oc.fillRect(0, 0, W, H);
+    ctx.drawImage(off, 0, 0);
+  }
+
+  // card : { name, honor, rarity, faction, faction2?, ability, flavor, attack, life, description }
   function renderCard(card) {
     const rar = RARITIES[card.rarity]; const t = rar.t;
     const win = { x0: t, y0: t, x1: W - t, y1: H - t, r: 10 };
@@ -518,17 +537,18 @@
     const ctx = out.getContext('2d');
     ctx.save(); path(ctx, rr(CARD)); ctx.clip();
     // Fond de la carte : couleur de la faction, plus claire en haut, sombre en bas pour le texte.
-    const c = hex(card.faction.color);
-    const g = ctx.createRadialGradient(CX, 130, 10, CX, 170, 330);
-    g.addColorStop(0, rgb(c, 1.1)); g.addColorStop(0.55, rgb(c, 0.7)); g.addColorStop(1, rgb(c, 0.3));
-    ctx.fillStyle = g; path(ctx, rr(win)); ctx.fill();
+    paintFond(ctx, win, card, (cx, c) => {
+      const g = cx.createRadialGradient(CX, 130, 10, CX, 170, 330);
+      g.addColorStop(0, rgb(c, 1.1)); g.addColorStop(0.55, rgb(c, 0.7)); g.addColorStop(1, rgb(c, 0.3));
+      cx.fillStyle = g; path(cx, rr(win)); cx.fill();
+    });
     const dark = ctx.createLinearGradient(0, 200, 0, 330);
     dark.addColorStop(0, 'rgba(8,8,10,0)'); dark.addColorStop(1, 'rgba(8,8,10,0.78)');
     ctx.fillStyle = dark; ctx.fillRect(0, 200, W, H - 200);
     // Repère de l'illustration (provisoire), sans cadre : l'image se fond dans la carte.
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 15px "Alegreya Sans", system-ui, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 160);
-    drawFrameSingle(ctx, rar, win, card.faction);
+    drawFrameSingle(ctx, rar, win, card.faction, card.faction2);
     // Emblème au centre du motif du haut, comme un blason posé sur le cadre.
     // Nom dans son cadre rectangulaire.
     drawNameBox(ctx, rar, card.name, SKETCH.name.y0, SKETCH.name.y1);
@@ -565,16 +585,17 @@
     const out = document.createElement('canvas'); out.width = W; out.height = H;
     const ctx = out.getContext('2d');
     ctx.save(); path(ctx, rr(CARD)); ctx.clip();
-    const c = hex(card.faction.color);
-    const g = ctx.createRadialGradient(CX, H / 2, 20, CX, H / 2, 420);
-    g.addColorStop(0, rgb(c, 0.45)); g.addColorStop(1, rgb(c, 0.12));
-    ctx.fillStyle = g; path(ctx, rr(win)); ctx.fill();
-    drawFrameSingle(ctx, rar, win, card.faction);
+    paintFond(ctx, win, card, (cx, c) => {
+      const g = cx.createRadialGradient(CX, H / 2, 20, CX, H / 2, 420);
+      g.addColorStop(0, rgb(c, 0.45)); g.addColorStop(1, rgb(c, 0.12));
+      cx.fillStyle = g; path(cx, rr(win)); cx.fill();
+    });
+    drawFrameSingle(ctx, rar, win, card.faction, card.faction2);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     let size = 30; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`;
     while (ctx.measureText(card.name).width > W - 120 && size > 16) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }
     ctx.fillStyle = '#f7f1e6'; ctx.fillText(card.name, CX, 250);
-    drawFactionName(ctx, rar, card.faction.short + ' · ' + rar.label, 292);
+    drawFactionName(ctx, rar, card.faction.short + (card.faction2 ? ' · ' + card.faction2.short : '') + ' · ' + rar.label, 292);
     ctx.font = 'italic 21px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.88)';
     let y = 352;
     for (const line of wrap(ctx, card.description || '', W - 140)) { ctx.fillText(line, CX, y); y += 30; }

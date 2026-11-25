@@ -311,9 +311,14 @@ dialog#viewer::backdrop { background: rgba(6,5,8,.88); }
           <span id="e-tags-lbl">Étiquettes (autant que tu veux)</span>
           <div class="picker" id="e-tags"></div>
         </div>
-        <label class="f">Faction de la carte (sa couleur et son logo)
-          <select id="e-faction"></select>
-        </label>
+        <div class="row">
+          <label class="f">Faction de la carte (couleur et logo)
+            <select id="e-faction"></select>
+          </label>
+          <label class="f">Seconde faction (carte bicolore)
+            <select id="e-faction2"></select>
+          </label>
+        </div>
         <span class="fs-title">Sur la carte</span>
         <label class="f">Capacité
           <textarea id="e-ability" rows="2" placeholder="Ce que fait la carte."></textarea>
@@ -574,9 +579,12 @@ dialog#viewer::backdrop { background: rgba(6,5,8,.88); }
     return { id: t.logo || t.id, name: t.name, short, color: t.color || DEFAULT_COLOR };
   }
   function cardOf(e) {
-    const factionId = e.factionId && (e.tagIds || []).includes(e.factionId) ? e.factionId : (e.tagIds || [])[0];
+    const tags = e.tagIds || [];
+    const factionId = e.factionId && tags.includes(e.factionId) ? e.factionId : tags[0];
+    const factionId2 = e.factionId2 && tags.includes(e.factionId2) && e.factionId2 !== factionId ? e.factionId2 : null;
     return {
       name: e.title || "Sans nom", honor: e.honor || "", rarity: e.rarity || "commune", faction: factionOf(factionId),
+      faction2: factionId2 ? factionOf(factionId2) : null,
       ability: e.ability || "", flavor: e.flavor || "", attack: e.attack, life: e.life,
       description: e.description || "", noStats: e.kind !== "personnage",
     };
@@ -651,7 +659,8 @@ dialog#viewer::backdrop { background: rgba(6,5,8,.88); }
     $("e-flavor").value = e?.flavor || "";
     $("e-attack").value = e?.attack ?? "";
     $("e-life").value = e?.life ?? "";
-    S.editFaction = e?.factionId || null;
+    S.editFaction = e?.factionId || null; S.editFaction2 = e?.factionId2 || null;
+    $("e-faction").value = ""; $("e-faction2").value = "";
     S.previewBack = false; $("e-flip").textContent = "Voir le dos";
     const chosen = new Set(e?.tagIds || (S.selTag ? [S.selTag] : []));
     const pk = $("e-tags"); pk.replaceChildren();
@@ -677,12 +686,17 @@ dialog#viewer::backdrop { background: rgba(6,5,8,.88); }
     sel.replaceChildren(...(ids.length ? ids.map(id => h("option", { value: id }, S.tags.get(id)?.name || id)) : [h("option", { value: "" }, "Coche une étiquette d'abord")]));
     if (cur && ids.includes(cur)) sel.value = cur;
     sel.disabled = !ids.length;
+    const sel2 = $("e-faction2"); const cur2 = sel2.value || S.editFaction2;
+    const others = ids.filter(id => id !== sel.value);
+    sel2.replaceChildren(h("option", { value: "" }, "Aucune"), ...others.map(id => h("option", { value: id }, S.tags.get(id)?.name || id)));
+    if (cur2 && others.includes(cur2)) sel2.value = cur2;
+    sel2.disabled = !others.length;
   }
   function formEntry() {
     const num = (v) => (v === "" ? null : Math.max(0, Math.min(99, parseInt(v, 10) || 0)));
     return {
       title: $("e-title").value.trim(), honor: $("e-honor").value.trim(), kind: $("e-kind").value, rarity: $("e-rarity").value || null,
-      tagIds: checkedTags(), factionId: $("e-faction").value || null,
+      tagIds: checkedTags(), factionId: $("e-faction").value || null, factionId2: $("e-faction2").value || null,
       ability: $("e-ability").value.trim(), flavor: $("e-flavor").value.trim(), attack: num($("e-attack").value), life: num($("e-life").value),
       description: $("e-desc").value.trim(), visual: $("e-visual").value.trim(),
     };
@@ -695,7 +709,7 @@ dialog#viewer::backdrop { background: rgba(6,5,8,.88); }
     $("e-preview").replaceChildren(S.previewBack ? Cadre.renderBack(card) : Cadre.renderCard(card));
   }
   $("entryForm").addEventListener("input", (ev) => { if (ev.target.closest && ev.target.closest("#e-tags")) fillFactionSelect(); clearTimeout(prevT); prevT = setTimeout(updatePreview, 120); });
-  $("entryForm").addEventListener("change", (ev) => { if (ev.target.closest && ev.target.closest("#e-tags")) fillFactionSelect(); updatePreview(); });
+  $("entryForm").addEventListener("change", (ev) => { if (ev.target.closest && (ev.target.closest("#e-tags") || ev.target.id === "e-faction")) fillFactionSelect(); updatePreview(); });
   $("e-flip").addEventListener("click", () => { S.previewBack = !S.previewBack; $("e-flip").textContent = S.previewBack ? "Voir la face" : "Voir le dos"; updatePreview(); });
 
   $("entryForm").addEventListener("submit", async ev => {

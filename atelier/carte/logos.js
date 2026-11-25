@@ -180,6 +180,33 @@
       dot(50, 66, 4.4),
       ln('M18 90 L32 70 M82 90 L68 70', f),
     ],
+    // Cysars : peuple du feu qui vit sous terre. Une flamme dans la bouche d'une caverne, des braises qui montent.
+    cysars: [
+      ln('M14 90 C14 46 30 22 50 22 C70 22 86 46 86 90', t),
+      ln('M24 90 C24 54 36 34 50 34 C64 34 76 54 76 90', f),
+      fill('M50 44 C58 56 64 64 62 76 C61 84 56 88 50 88 C44 88 39 84 38 76 C37 68 44 62 46 54 C48 60 51 62 52 59 C54 54 52 50 50 44 Z'),
+      ln('M6 91 H94', T),
+      dot(50, 9, 2.6), dot(40, 13, 1.8), dot(60, 13, 1.8),
+    ],
+    // Näadrian : les squelettes. Un crâne, orbites creuses, mâchoire serrée.
+    naadrian: [
+      ln('M24 50 C24 28 36 14 50 14 C64 14 76 28 76 50 C76 60 72 66 66 70 V84 H34 V70 C28 66 24 60 24 50 Z', t),
+      fill('M32 46 C32 39 43 39 45 46 C45 52 40 57 37 55 C34 53 32 50 32 46 Z'),
+      fill('M68 46 C68 39 57 39 55 46 C55 52 60 57 63 55 C66 53 68 50 68 46 Z'),
+      fill('M50 56 L46 65 H54 Z'),
+      ln('M34 73 H66 M42 73 V84 M50 73 V84 M58 73 V84', f),
+      ln('M60 16 L55 25 L59 30', f),
+    ],
+    // Descendants des dieux : une lignée d'étoiles, la grande engendre les petites.
+    descendants: [
+      { fn: (ctx) => {
+        const st = (cx, cy, R, r) => { ctx.beginPath(); for (let k = 0; k < 8; k += 1) { const a = -Math.PI / 2 + (k / 8) * TAU, rad = k % 2 ? r : R; const x = cx + Math.cos(a) * rad, y = cy + Math.sin(a) * rad; if (k) ctx.lineTo(x, y); else ctx.moveTo(x, y); } ctx.closePath(); ctx.stroke(); };
+        ctx.lineWidth = t; st(50, 22, 18, 5); ctx.lineWidth = f; st(28, 66, 10, 3); st(72, 66, 10, 3);
+      } },
+      dot(50, 22, 2.8), dot(28, 66, 2), dot(72, 66, 2),
+      ln('M50 40 C50 50 30 48 28 56 M50 40 C50 50 70 48 72 56', f),
+      ln('M28 76 V86 M72 76 V86', f), dot(28, 90, 2.2), dot(72, 90, 2.2), dot(50, 92, 1.8),
+    ],
     // Nimors : le cauchemar. Croissant de lune hérissé d'épines, un œil ouvert qui veille, des larmes.
     'nids-morts': [
       ln('M60 6 C32 10 14 30 14 54 C14 78 34 96 60 96 C42 86 32 72 32 54 C32 36 42 20 60 6 Z', t),
