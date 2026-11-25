@@ -207,6 +207,43 @@
       ln('M50 40 C50 50 30 48 28 56 M50 40 C50 50 70 48 72 56', f),
       ln('M28 76 V86 M72 76 V86', f), dot(28, 90, 2.2), dot(72, 90, 2.2), dot(50, 92, 1.8),
     ],
+    // Sorcières : chapeau pointu à la pointe tombante, croissant de lune et étoiles.
+    sorcieres: [
+      ln('M30 70 C38 54 42 38 46 24 C49 14 57 8 68 10 C61 14 57 20 57 30 C58 46 62 58 70 70', t),
+      ln('M8 74 C24 64 76 64 92 74 C76 84 24 84 8 74 Z', t),
+      ln('M33 63 C44 59 57 59 67 63', f), ln('M45 58 H55 V66 H45 Z', f),
+      fill('M24 12 C15 16 12 29 21 36 C14 35 9 27 12 19 C14 14 19 12 24 12 Z'),
+      dot(30, 42, 2.2), dot(17, 48, 1.6), dot(80, 30, 2), curl(68, 10, 4, 10, 1),
+    ],
+    // Zal'Dry : orcs difformes, presque des gobelins. Tête asymétrique, oreilles en lambeaux, sourire dentelé.
+    zaldry: [
+      ln('M30 30 C34 18 66 18 70 30 C74 44 70 64 60 74 C55 79 45 79 40 74 C30 64 26 44 30 30 Z', t),
+      ln('M31 36 L6 30 L14 40 L4 47 L30 49', t),
+      ln('M69 35 L96 24 L86 37 L97 44 L70 49', t),
+      { fn: circle(41, 42, 5.2) }, { fn: circle(60, 44, 3) },
+      ln('M34 33 L47 37 M55 38 L67 34', f),
+      ln('M49 48 C46 55 52 57 55 52', f),
+      ln('M37 62 L42 57 L46 63 L50 57 L54 63 L58 57 L63 61', t),
+      dot(34, 56, 1.9), dot(67, 52, 1.6), dot(48, 25, 1.7),
+    ],
+    // L'humanité : une couronne de laurier, nouée en bas.
+    humanite: [
+      ln('M46 88 C24 80 12 60 16 36 C18 26 24 18 31 12', t),
+      ln('M54 88 C76 80 88 60 84 36 C82 26 76 18 69 12', t),
+      { fn: (ctx) => {
+        const leaf = (x, y, a) => { ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.beginPath(); ctx.ellipse(0, 0, 8.5, 3.4, 0, 0, TAU); ctx.fill(); ctx.restore(); };
+        [[26, 79, -0.3], [17, 66, -0.9], [13, 51, -1.4], [15, 36, -1.9], [22, 23, -2.3]].forEach(([x, y, a]) => { leaf(x - 4, y - 2, a - 0.5); leaf(x + 5, y + 1, a + 0.5); });
+        [[74, 79, 0.3], [83, 66, 0.9], [87, 51, 1.4], [85, 36, 1.9], [78, 23, 2.3]].forEach(([x, y, a]) => { leaf(x + 4, y - 2, -a + Math.PI + 0.5); leaf(x - 5, y + 1, -a + Math.PI - 0.5); });
+      } },
+      ln('M43 91 L57 84 M57 91 L43 84', f), dot(50, 87.5, 2.6), dot(50, 10, 2.2),
+    ],
+    // Empire du sang : une couronne d'où le sang coule.
+    'empire-sang': [
+      ln('M22 58 L22 26 L34 38 L42 18 L50 34 L58 18 L66 38 L78 26 L78 58 Z', t),
+      ln('M22 50 H78', f), dot(42, 18, 2.4), dot(58, 18, 2.4), dot(22, 26, 2), dot(78, 26, 2), dot(50, 43, 2.6),
+      ln('M33 58 V66 M67 58 V71', f), dot(33, 69, 2.2), dot(67, 74, 2.2),
+      fill('M50 64 C54 72 58 76 58 82 C58 88 54 92 50 92 C46 92 42 88 42 82 C42 76 46 72 50 64 Z'),
+    ],
     // Nimors : le cauchemar. Croissant de lune hérissé d'épines, un œil ouvert qui veille, des larmes.
     'nids-morts': [
       ln('M60 6 C32 10 14 30 14 54 C14 78 34 96 60 96 C42 86 32 72 32 54 C32 36 42 20 60 6 Z', t),

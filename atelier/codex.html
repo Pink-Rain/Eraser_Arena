@@ -73,8 +73,10 @@ h2 { font-family: var(--f-display); font-weight: 400; font-size: var(--s-xl); ma
 .hint { font-size: var(--s-sm); color: var(--bone-faint); }
 
 /* Tag tree */
-aside.tags { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1rem); display: grid; gap: 1rem; }
-@media (max-width: 820px) { aside.tags { position: static; } }
+/* La colonne des étiquettes reste à l'écran et défile toute seule, indépendamment des cartes. */
+aside.tags { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1rem); display: grid; gap: 1rem; align-content: start;
+  max-height: calc(100vh - 2rem - env(safe-area-inset-top, 0px)); overflow-y: auto; overscroll-behavior: contain; padding-right: .4rem; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+@media (max-width: 820px) { aside.tags { position: static; max-height: 46vh; border: 1px solid var(--line-soft); border-radius: 8px; padding: .8rem; } }
 .tree { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
 .node { display: flex; align-items: center; gap: .25rem; border-radius: 4px; }
 .node-btn {
