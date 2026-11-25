@@ -523,40 +523,51 @@
     for (const f of [card.faction, card.faction2]) { const d = f && S.get(f.id); if (d) return { data: d, place: silPlace(d) }; }
     return null;
   }
-  // Placement : tout le crâne au-dessus du bandeau du nom, le corps qui descend dans le noir derrière lui.
+  // Placement : la tête au-dessus du bandeau du nom, le corps qui descend derrière lui.
   function silPlace(d) {
-    const h = 300, top = 34, k = h / d.h, w = d.w * k;
-    return { x: CX - w / 2, y: top, k };
+    let h = 300; const top = 34; let k = h / d.h;
+    if (d.w * k > 440) { k = 440 / d.w; h = d.h * k; }
+    const w = d.w * k;
+    return { x: CX - w / 2, y: top + (300 - h), k, h };
   }
+  // Ombre noire ; elle devient transparente vers le bas pour se fondre dans le noir de la carte.
   function drawSilhouette(ctx, win, d, pl) {
-    ctx.save(); path(ctx, rr(win)); ctx.clip();
-    ctx.translate(pl.x, pl.y); ctx.scale(pl.k, pl.k);
-    ctx.fillStyle = '#060608'; ctx.fill(new Path2D(d.d));
-    ctx.restore();
+    const off = document.createElement('canvas'); off.width = W; off.height = H; const oc = off.getContext('2d');
+    oc.save(); oc.translate(pl.x, pl.y); oc.scale(pl.k, pl.k);
+    oc.fillStyle = '#060608'; oc.fill(new Path2D(d.d), 'evenodd'); oc.restore();
+    oc.globalCompositeOperation = 'destination-in';
+    const fade = oc.createLinearGradient(0, pl.y + pl.h * 0.68, 0, pl.y + pl.h);
+    fade.addColorStop(0, '#000'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+    oc.fillStyle = fade; oc.fillRect(0, 0, W, H);
+    ctx.save(); path(ctx, rr(win)); ctx.clip(); ctx.drawImage(off, 0, 0); ctx.restore();
   }
-  // Détails légers dans la couleur du cadre : un liseré sur le haut du contour, des yeux qui luisent.
+  // Traits tracés sur l'image (contour du crâne, orbites, défenses…), dans la couleur du cadre.
   function drawSilhouetteDetails(ctx, rar, win, d, pl) {
     const touch = touchStyle(ctx, rar);
-    if (d.rim) {
-      const off = document.createElement('canvas'); off.width = W; off.height = H; const oc = off.getContext('2d');
-      oc.save(); oc.translate(pl.x, pl.y); oc.scale(pl.k, pl.k);
-      oc.strokeStyle = touchStyle(oc, rar); oc.lineWidth = 1.4 / pl.k; oc.lineJoin = 'round'; oc.stroke(new Path2D(d.d)); oc.restore();
-      oc.globalCompositeOperation = 'destination-in';
-      const fade = oc.createLinearGradient(0, pl.y, 0, pl.y + 1000 * pl.k * 0.5);
-      fade.addColorStop(0, 'rgba(0,0,0,0.85)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
-      oc.fillStyle = fade; oc.fillRect(0, 0, W, H);
-      ctx.save(); path(ctx, rr(win)); ctx.clip(); if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 4; } ctx.drawImage(off, 0, 0); ctx.restore();
+    const P = ([x, y]) => [pl.x + x * pl.k, pl.y + y * pl.k];
+    ctx.save(); path(ctx, rr(win)); ctx.clip();
+    ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 3 + 3 * rar.glow; }
+    for (const L of d.lines || []) {
+      ctx.lineWidth = L.w; ctx.globalAlpha = 0.9; ctx.beginPath();
+      // Courbe lissée passant par les milieux des segments.
+      const pts = L.pts.map(P); const n = pts.length;
+      if (L.closed) {
+        const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; const m0 = m(pts[n - 1], pts[0]); ctx.moveTo(...m0);
+        for (let i = 0; i < n; i += 1) { const q = pts[(i + 1) % n]; const mm = m(pts[i], q); ctx.quadraticCurveTo(pts[i][0], pts[i][1], mm[0], mm[1]); }
+        ctx.closePath();
+      } else { ctx.moveTo(...pts[0]); for (let i = 1; i < n; i += 1) ctx.lineTo(...pts[i]); }
+      ctx.stroke();
     }
-    for (const [ex, ey, rx, ry] of d.eyes || []) {
-      const x = pl.x + ex * pl.k, y = pl.y + ey * pl.k, a = rx * pl.k, b = ry * pl.k;
-      ctx.save();
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, a * 2.6);
-      glow.addColorStop(0, hexA(rar.lite, 0.55)); glow.addColorStop(1, hexA(rar.lite, 0));
-      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, a * 2.6, 0, TAU); ctx.fill();
-      ctx.fillStyle = touch; ctx.shadowColor = rar.c; ctx.shadowBlur = 8;
-      ctx.beginPath(); ctx.ellipse(x, y, a * 0.42, b * 0.36, 0, 0, TAU); ctx.fill();
-      ctx.restore();
+    ctx.globalAlpha = 1;
+    for (const F of d.fills || []) {
+      const pts = F.map(P); let cx = 0, cy = 0; pts.forEach(([x, y]) => { cx += x; cy += y; }); cx /= pts.length; cy /= pts.length;
+      const r = Math.max(...pts.map(([x, y]) => Math.hypot(x - cx, y - cy)));
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 2.2); g.addColorStop(0, hexA(rar.lite, 0.4)); g.addColorStop(1, hexA(rar.lite, 0));
+      ctx.save(); ctx.shadowBlur = 0; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r * 2.2, 0, TAU); ctx.fill(); ctx.restore();
+      ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); ctx.globalAlpha = 0.85; ctx.fill(); ctx.globalAlpha = 1;
     }
+    ctx.restore();
   }
   const hexA = (h, a) => { const c = hex(h); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; };
 
