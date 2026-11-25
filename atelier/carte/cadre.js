@@ -472,13 +472,28 @@
   }
 
   // Titre honorifique sous le nom, en italique, entre deux filets fins terminés par un point.
+  // Titre honorifique entre l'attaque et la vie, en italique, entre deux filets terminés par un point.
+  // S'il est trop long pour une ligne lisible, il passe sur deux lignes (sans filets).
   function drawHonorific(ctx, rar, text, y) {
     ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const font = (sz) => `italic ${sz}px "Alegreya", Georgia, serif`;
     let size = 19; const maxW = 200;
-    ctx.font = `italic ${size}px "Alegreya", Georgia, serif`;
-    while (ctx.measureText(text).width > maxW && size > 12) { size -= 1; ctx.font = `italic ${size}px "Alegreya", Georgia, serif`; }
+    ctx.font = font(size);
+    while (ctx.measureText(text).width > maxW && size > 15) { size -= 1; ctx.font = font(size); }
+    ctx.fillStyle = 'rgba(244,238,228,0.92)';
+    if (ctx.measureText(text).width > maxW) {
+      // Deux lignes : on coupe au mot le plus proche du milieu.
+      size = 16; ctx.font = font(size);
+      const words = text.split(/\s+/); let best = 1, bestD = Infinity;
+      for (let i = 1; i < words.length; i += 1) { const a = words.slice(0, i).join(' '), b = words.slice(i).join(' '); const d = Math.max(ctx.measureText(a).width, ctx.measureText(b).width); if (d < bestD) { bestD = d; best = i; } }
+      const l1 = words.slice(0, best).join(' '), l2 = words.slice(best).join(' ');
+      while (Math.max(ctx.measureText(l1).width, ctx.measureText(l2).width) > 226 && size > 12) { size -= 1; ctx.font = font(size); }
+      const lh = size * 1.15;
+      ctx.fillText(l1, CX, y - lh / 2 + 1); ctx.fillText(l2, CX, y + lh / 2 + 1);
+      ctx.restore(); return;
+    }
     const w = ctx.measureText(text).width;
-    ctx.fillStyle = 'rgba(244,238,228,0.92)'; ctx.fillText(text, CX, y);
+    ctx.fillText(text, CX, y);
     const touch = touchStyle(ctx, rar); ctx.strokeStyle = touch; ctx.fillStyle = touch; ctx.lineWidth = 0.9; ctx.globalAlpha = 0.85;
     const gap = 10, end = 112;
     [-1, 1].forEach((sg) => {
