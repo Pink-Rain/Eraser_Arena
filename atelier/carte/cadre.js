@@ -526,10 +526,14 @@
   // Placement : la tête au-dessus du bandeau du nom, le corps qui descend derrière lui.
   function silPlace(d) {
     // Sous les logos du haut (jusqu'à ~90 px) : la tête commence plus bas, le corps finit sous le nom.
-    let h = 280; const bottom = 372; let k = h / d.h;
-    if (d.w * k > 440) { k = 440 / d.w; h = d.h * k; }
+    // Réglages par silhouette : scale (taille), top (ancrée en haut, en px depuis le haut de la carte).
+    const sc = d.scale || 1;
+    let h = 280 * sc; const bottom = 372; let k = h / d.h;
+    const maxW = Math.min(470, 440 * sc);
+    if (d.w * k > maxW) { k = maxW / d.w; h = d.h * k; }
     const w = d.w * k;
-    return { x: CX - w / 2, y: bottom - h, k, h };
+    const y = d.top !== undefined ? d.top : bottom - h;
+    return { x: CX - w / 2, y, k, h };
   }
   // Ombre noire ; elle devient transparente vers le bas pour se fondre dans le noir de la carte.
   function drawSilhouette(ctx, win, d, pl) {
