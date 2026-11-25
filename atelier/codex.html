@@ -579,7 +579,7 @@ dialog#viewer::backdrop { background: rgba(6,5,8,.88); }
     const t = tagId && S.tags.get(tagId);
     if (!t) return { id: "aucune", name: "Sans faction", short: "Sans faction", color: "#5c5862" };
     const short = t.name.replace(/\s*\(.*\)\s*$/, "");
-    return { id: t.logo || t.id, name: t.name, short, color: t.color || DEFAULT_COLOR };
+    return { id: t.logo || t.id, sil: t.silhouette || t.logo || t.id, name: t.name, short, color: t.color || DEFAULT_COLOR };
   }
   function cardOf(e) {
     const tags = e.tagIds || [];

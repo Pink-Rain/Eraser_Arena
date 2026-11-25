@@ -520,7 +520,7 @@
   // La silhouette vient de la première faction qui en a une.
   function silhouetteFor(card) {
     const S = root.Silhouettes; if (!S) return null;
-    for (const f of [card.faction, card.faction2]) { const d = f && S.get(f.id); if (d) return { data: d, place: silPlace(d) }; }
+    for (const f of [card.faction, card.faction2]) { const d = f && S.get(f.sil || f.id); if (d) return { data: d, place: silPlace(d) }; }
     return null;
   }
   // Placement : la tête au-dessus du bandeau du nom, le corps qui descend derrière lui.
