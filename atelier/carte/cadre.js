@@ -516,6 +516,50 @@
   // vers le centre pour ne jamais couvrir les ornements d'angle.
   const SKETCH = { padX: 118, topY: 52, name: { y0: 266, y1: 316 }, catY: 346, textY: 392, botY: H - 52 };
 
+  /* ---------- silhouettes ---------- */
+  // La silhouette vient de la première faction qui en a une.
+  function silhouetteFor(card) {
+    const S = root.Silhouettes; if (!S) return null;
+    for (const f of [card.faction, card.faction2]) { const d = f && S.get(f.id); if (d) return { data: d, place: silPlace(d) }; }
+    return null;
+  }
+  // Placement : tout le crâne au-dessus du bandeau du nom, le corps qui descend dans le noir derrière lui.
+  function silPlace(d) {
+    const h = 300, top = 34, k = h / d.h, w = d.w * k;
+    return { x: CX - w / 2, y: top, k };
+  }
+  function drawSilhouette(ctx, win, d, pl) {
+    ctx.save(); path(ctx, rr(win)); ctx.clip();
+    ctx.translate(pl.x, pl.y); ctx.scale(pl.k, pl.k);
+    ctx.fillStyle = '#060608'; ctx.fill(new Path2D(d.d));
+    ctx.restore();
+  }
+  // Détails légers dans la couleur du cadre : un liseré sur le haut du contour, des yeux qui luisent.
+  function drawSilhouetteDetails(ctx, rar, win, d, pl) {
+    const touch = touchStyle(ctx, rar);
+    if (d.rim) {
+      const off = document.createElement('canvas'); off.width = W; off.height = H; const oc = off.getContext('2d');
+      oc.save(); oc.translate(pl.x, pl.y); oc.scale(pl.k, pl.k);
+      oc.strokeStyle = touchStyle(oc, rar); oc.lineWidth = 1.4 / pl.k; oc.lineJoin = 'round'; oc.stroke(new Path2D(d.d)); oc.restore();
+      oc.globalCompositeOperation = 'destination-in';
+      const fade = oc.createLinearGradient(0, pl.y, 0, pl.y + 1000 * pl.k * 0.5);
+      fade.addColorStop(0, 'rgba(0,0,0,0.85)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+      oc.fillStyle = fade; oc.fillRect(0, 0, W, H);
+      ctx.save(); path(ctx, rr(win)); ctx.clip(); if (rar.glow) { ctx.shadowColor = rar.c; ctx.shadowBlur = 4; } ctx.drawImage(off, 0, 0); ctx.restore();
+    }
+    for (const [ex, ey, rx, ry] of d.eyes || []) {
+      const x = pl.x + ex * pl.k, y = pl.y + ey * pl.k, a = rx * pl.k, b = ry * pl.k;
+      ctx.save();
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, a * 2.6);
+      glow.addColorStop(0, hexA(rar.lite, 0.55)); glow.addColorStop(1, hexA(rar.lite, 0));
+      ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, a * 2.6, 0, TAU); ctx.fill();
+      ctx.fillStyle = touch; ctx.shadowColor = rar.c; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.ellipse(x, y, a * 0.42, b * 0.36, 0, 0, TAU); ctx.fill();
+      ctx.restore();
+    }
+  }
+  const hexA = (h, a) => { const c = hex(h); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; };
+
   // Fond de faction ; pour une carte bicolore, la seconde couleur prend la moitié droite
   // avec une transition douce au centre.
   function paintFond(ctx, win, card, paintOne) {
@@ -542,12 +586,18 @@
       g.addColorStop(0, rgb(c, 1.1)); g.addColorStop(0.55, rgb(c, 0.7)); g.addColorStop(1, rgb(c, 0.3));
       cx.fillStyle = g; path(cx, rr(win)); cx.fill();
     });
+    // Silhouette du peuple : une ombre noire qui monte du bas sombre de la carte.
+    const sil = silhouetteFor(card);
+    if (sil) drawSilhouette(ctx, win, sil.data, sil.place);
     const dark = ctx.createLinearGradient(0, 200, 0, 330);
     dark.addColorStop(0, 'rgba(8,8,10,0)'); dark.addColorStop(1, 'rgba(8,8,10,0.78)');
     ctx.fillStyle = dark; ctx.fillRect(0, 200, W, H - 200);
-    // Repère de l'illustration (provisoire), sans cadre : l'image se fond dans la carte.
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 15px "Alegreya Sans", system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 160);
+    if (sil) drawSilhouetteDetails(ctx, rar, win, sil.data, sil.place);
+    else {
+      // Repère de l'illustration (provisoire), sans cadre : l'image se fond dans la carte.
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 15px "Alegreya Sans", system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 160);
+    }
     drawFrameSingle(ctx, rar, win, card.faction, card.faction2);
     // Emblème au centre du motif du haut, comme un blason posé sur le cadre.
     // Nom dans son cadre rectangulaire.
