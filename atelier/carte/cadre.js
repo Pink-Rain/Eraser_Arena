@@ -604,8 +604,7 @@
     const dark = ctx.createLinearGradient(0, 200, 0, 330);
     dark.addColorStop(0, 'rgba(8,8,10,0)'); dark.addColorStop(1, 'rgba(8,8,10,0.78)');
     ctx.fillStyle = dark; ctx.fillRect(0, 200, W, H - 200);
-    if (sil) drawSilhouetteDetails(ctx, rar, win, sil.data, sil.place);
-    else {
+    if (!sil) {
       // Repère de l'illustration (provisoire), sans cadre : l'image se fond dans la carte.
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '600 15px "Alegreya Sans", system-ui, sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillText('ILLUSTRATION', CX, 160);
