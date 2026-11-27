@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Atelier des cartes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Alegreya:ital@1&family=Alegreya+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: a faction picker, then the six rarity cards in a wrapping grid. Tapping a card opens it large; tapping the large card flips it. Single dark look, like the Codex. */
+  :root { color-scheme: dark; --bg: #121014; --fg: #e6dccb; --dim: #a99e90; --field: #1c181b; --line: #3a3236; --focus: #e3ad48; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { font: 15px/1.5 "Alegreya Sans", system-ui, sans-serif; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
+  h1 { font: 700 1.7rem "Cinzel", Georgia, serif; margin: 0 0 4px; text-wrap: balance; }
+  p.lede { color: var(--dim); margin: 0 0 16px; max-width: 70ch; }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+  select { font: inherit; color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; max-width: 100%; }
+  select:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 22px 16px; }
+  figure { margin: 0; display: grid; gap: 6px; justify-items: center; min-width: 0; }
+  .thumb { display: block; width: 100%; max-width: 320px; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 4.5%; }
+  .thumb canvas { width: 100%; height: auto; display: block; }
+  h2 { font: 700 1.2rem "Cinzel", Georgia, serif; margin: 32px 0 12px; }
+  .logos { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 14px 10px; }
+  .logo { display: grid; justify-items: center; gap: 4px; text-align: center; font-size: 13px; color: var(--dim); min-width: 0; }
+  .logo canvas { width: 72px; height: 72px; }
+  figcaption { font: 600 14px "Cinzel", Georgia, serif; color: var(--dim); }
+
+  dialog { border: 0; padding: 0; background: transparent; max-width: none; max-height: none; width: 100%; height: 100%; overflow: hidden; }
+  dialog::backdrop { background: rgba(6, 5, 8, 0.86); }
+  .stage { position: absolute; inset: 0; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+  .big { position: relative; height: min(86vh, calc((100vw - 32px) * 716 / 512)); aspect-ratio: 512 / 716; max-width: 100%; padding: 0; border: 0; background: none; cursor: pointer; perspective: 1600px; }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 4.5%; overflow: hidden; }
+  .face canvas { width: 100%; height: 100%; display: block; }
+  .face.back { transform: rotateY(180deg); }
+  .big[aria-pressed="true"] .front { transform: rotateY(-180deg); }
+  .big[aria-pressed="true"] .back { transform: rotateY(0deg); }
+  @media (prefers-reduced-motion: no-preference) { .face { transition: transform .6s cubic-bezier(.2,.7,.2,1); } }
+  .hint { position: absolute; left: 0; right: 0; bottom: max(10px, env(safe-area-inset-bottom, 0px)); text-align: center; color: var(--dim); font-size: 13px; pointer-events: none; }
+  .close { position: absolute; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); font: 600 14px "Alegreya Sans", sans-serif; color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+</style>
+
+<h1>Atelier des cartes</h1>
+<p class="lede">Une carte par rareté, sur le fond de la faction choisie. Le logo de la faction est lié au cadre, d'une façon différente pour chaque rareté : pendentif, paire de pendentifs, angles, diagonales, guirlande, couronne de perles. Chaque emplacement porte son nom : titre, titre honorifique, capacité, citation, attaque (losange) et vie (écu). Touche une carte pour l'ouvrir en grand, puis touche-la pour la retourner.</p>
+<div class="bar"><label for="faction">Faction</label> <select id="faction"></select></div>
+<div class="grid" id="grid"></div>
+<h2>Logos des factions</h2>
+<div class="logos" id="logos"></div>
+
+<dialog id="viewer" aria-label="Carte en grand">
+  <div class="stage" id="stage">
+    <button class="big" id="big" type="button" aria-pressed="false" aria-label="Retourner la carte">
+      <span class="face front" id="bigFront"></span>
+      <span class="face back" id="bigBack"></span>
+    </button>
+    <button class="close" id="close" type="button">Fermer</button>
+    <p class="hint">Touche la carte pour la retourner</p>
+  </div>
+</dialog>
+
+<script src="carte/logos.js"></script>
+<script src="carte/cadre.js"></script>
+<script src="carte/factions.js"></script>
+<script>
+  const sel = document.getElementById('faction');
+  FACTIONS.forEach((f) => { const o = document.createElement('option'); o.value = f.id; o.textContent = ' '.repeat(f.depth || 0) + f.name; sel.append(o); });
+  sel.value = 'orques-sang';
+  // Textes d'emplacement : chaque zone dit ce qu'elle contiendra.
+  const cardFor = (rarity, faction) => ({ name: 'Titre', honor: 'Titre honorifique', rarity, faction, ability: 'Capacité', flavor: 'Citation', attack: 'A', life: 'V', description: 'Description' });
+
+  const viewer = document.getElementById('viewer'), big = document.getElementById('big');
+  function open(card) {
+    document.getElementById('bigFront').replaceChildren(Cadre.renderCard(card));
+    document.getElementById('bigBack').replaceChildren(Cadre.renderBack(card));
+    big.setAttribute('aria-pressed', 'false');
+    big.setAttribute('aria-label', 'Retourner la carte ' + Cadre.RARITIES[card.rarity].label);
+    viewer.showModal(); big.focus();
+  }
+  big.addEventListener('click', () => big.setAttribute('aria-pressed', big.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'));
+  document.getElementById('close').addEventListener('click', () => viewer.close());
+  document.getElementById('stage').addEventListener('click', (e) => { if (e.target.id === 'stage') viewer.close(); });
+
+  function draw() {
+    const f = FACTIONS.find((x) => x.id === sel.value);
+    const grid = document.getElementById('grid'); grid.replaceChildren();
+    for (const key of Cadre.ORDER) {
+      const card = cardFor(key, f);
+      const fig = document.createElement('figure');
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'thumb';
+      btn.setAttribute('aria-label', 'Ouvrir la carte ' + Cadre.RARITIES[key].label + ' en grand');
+      btn.append(Cadre.renderCard(card));
+      btn.addEventListener('click', () => open(card));
+      const cap = document.createElement('figcaption'); cap.textContent = Cadre.RARITIES[key].label;
+      fig.append(btn, cap); grid.append(fig);
+    }
+  }
+  sel.addEventListener('change', draw);
+  (async () => {
+    try { await Promise.all([document.fonts.load('700 26px "Cinzel"'), document.fonts.load('600 15px "Cinzel"'), document.fonts.load('500 19px "Alegreya Sans"'), document.fonts.load('italic 17px "Alegreya"')]); } catch (e) {}
+    draw();
+    const lg = document.getElementById('logos');
+    for (const f of FACTIONS) {
+      const d = document.createElement('div'); d.className = 'logo';
+      const c = document.createElement('canvas'); c.width = c.height = 144;
+      Logos.draw(c.getContext('2d'), f.id, 72, 72, 120, [[0, '#fff0bd'], [0.5, '#e3ad48'], [1, '#c88a2a']], null);
+      c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Logo ' + f.name);
+      const n = document.createElement('span'); n.textContent = f.name; d.append(c, n); lg.append(d);
+    }
+  })();
+</script>
+
+</body>
+</html>

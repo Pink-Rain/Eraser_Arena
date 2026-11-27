@@ -1,0 +1,26 @@
+import sys, numpy as np, cv2
+img = cv2.imread(sys.argv[1]); H, W = img.shape[:2]
+gc = np.full((H, W), cv2.GC_BGD, np.uint8)
+cv2.rectangle(gc, (188, 220), (290, 360), int(cv2.GC_PR_BGD), -1)
+poly = np.array([[237,232],[256,236],[268,247],[274,266],[272,290],[266,312],[258,334],[240,344],[224,338],[214,318],[206,296],[203,268],[208,247],[220,236]], np.int32)
+cv2.fillPoly(gc, [poly], int(cv2.GC_PR_FGD))
+inner = np.array([[237,245],[255,250],[262,268],[258,300],[248,325],[232,325],[220,300],[214,268],[222,250]], np.int32)
+cv2.fillPoly(gc, [inner], int(cv2.GC_FGD))
+bg = np.zeros((1, 65)); fg = np.zeros((1, 65))
+cv2.grabCut(img, gc, None, bg, fg, 8, cv2.GC_INIT_WITH_MASK)
+sk = (((gc == cv2.GC_FGD) | (gc == cv2.GC_PR_FGD)) * 255).astype(np.uint8)
+k = lambda r: cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r, r))
+sk = cv2.morphologyEx(sk, cv2.MORPH_OPEN, k(3))
+n, lab, st, _ = cv2.connectedComponentsWithStats(sk); sk = ((lab == 1 + np.argmax(st[1:, 4])) * 255).astype(np.uint8)
+c = max(cv2.findContours(sk, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0], key=cv2.contourArea)
+full = np.zeros_like(sk); cv2.drawContours(full, [c], -1, 255, -1)
+V = img.max(2)
+holes = (((V < 42) & (full > 0)) * 255).astype(np.uint8)
+holes = cv2.morphologyEx(holes, cv2.MORPH_OPEN, k(3))
+n, lab, st, _ = cv2.connectedComponentsWithStats(holes); hk = np.zeros_like(holes)
+for i in range(1, n):
+    if st[i, 4] > 25 and st[i, 1] < 325: hk[lab == i] = 255
+np.save(sys.argv[2] + '.full.npy', full); np.save(sys.argv[2] + '.holes.npy', hk)
+ov = img.copy(); ov[full > 0] = (ov[full > 0] * 0.4 + np.array([0, 160, 0]) * 0.6).astype(np.uint8); ov[hk > 0] = (255, 200, 0)
+cv2.imwrite(sys.argv[2], cv2.resize(ov[200:380, 170:310], None, fx=3, fy=3))
+print('trous', [int(st[i, 4]) for i in range(1, n) if st[i, 4] > 25])
