@@ -130,3 +130,20 @@ test('répartition des factions et cartes exemples', async () => {
   }
   assert.ok(ex.every((e) => e.exemple));
 });
+
+test('admin : paquets à volonté, cartes une par une, paquets truqués par faction', async () => {
+  const { fixerPaquets, fixerExemplaires, reserveForcee } = await import('../jeu/regles.js');
+  let e = nouvelEtat();
+  assert.equal(fixerPaquets(e, 250).paquets, 250);
+  assert.equal(fixerPaquets(e, -3).paquets, 0);
+  e = fixerExemplaires(e, 'a', 3);
+  assert.equal(e.collection.a, 3);
+  e = fixerExemplaires(e, 'a', 0);
+  assert.ok(!('a' in e.collection), 'à 0 la carte disparaît');
+  const avecFactions = reserve.map((c, i) => ({ ...c, factions: [i % 2 ? 'sang' : 'feu'] }));
+  const sang = reserveForcee(avecFactions, '', 'sang');
+  assert.ok(sang.length && sang.every((c) => c.factions.includes('sang')));
+  const sangLeg = reserveForcee(avecFactions, 'legendaire', 'sang');
+  assert.ok(sangLeg.every((c) => c.rarity === 'legendaire' && c.factions.includes('sang')));
+  assert.equal(reserveForcee(avecFactions, 'legendaire', 'inconnue').length, avecFactions.length, 'rien ne correspond : réserve entière');
+});

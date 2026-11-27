@@ -166,5 +166,18 @@ export function donnerTout(etat, reserve) {
   return { ...etat, collection };
 }
 export const viderCollection = (etat) => ({ ...etat, collection: {}, historique: [] });
-// La réserve d'un paquet truqué : seulement une rareté (pour voir ses effets à l'ouverture).
-export const reserveForcee = (reserve, rarete) => (rarete ? reserve.filter((c) => c.rarity === rarete) : reserve);
+export const fixerPaquets = (etat, n) => ({ ...etat, paquets: Math.max(0, Math.floor(n) || 0) });
+// Met une carte à n exemplaires (0 la retire de la collection).
+export function fixerExemplaires(etat, id, n) {
+  const collection = { ...etat.collection };
+  const v = Math.max(0, Math.floor(n) || 0);
+  if (v) collection[id] = v; else delete collection[id];
+  return { ...etat, collection };
+}
+// La réserve d'un paquet truqué : seulement une rareté et/ou une faction.
+// Si rien ne correspond, on garde la réserve entière plutôt qu'un paquet vide.
+export function reserveForcee(reserve, rarete = '', faction = '') {
+  if (!rarete && !faction) return reserve;
+  const r = reserve.filter((c) => (!rarete || c.rarity === rarete) && (!faction || (c.factions || []).includes(faction)));
+  return r.length ? r : reserve;
+}
