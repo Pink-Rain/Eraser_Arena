@@ -362,7 +362,7 @@
     "l4h64l9b1kuwrb425pgu"
    ],
    "factionId": "l4h64l9b1kuwrb425pgu",
-   "attack": 3,
+   "attack": 0,
    "life": 10
   },
   {
@@ -389,7 +389,7 @@
    ],
    "factionId": "nids-morts",
    "attack": 9,
-   "life": 6
+   "life": 7
   },
   {
    "id": "c-cauchemar",
@@ -402,7 +402,7 @@
    ],
    "factionId": "nids-morts",
    "attack": 9,
-   "life": 6
+   "life": 8
   },
   {
    "id": "c-desespoir",
@@ -414,7 +414,7 @@
     "nids-morts"
    ],
    "factionId": "nids-morts",
-   "attack": 5,
+   "attack": 7,
    "life": 9
   },
   {
@@ -455,8 +455,8 @@
    ],
    "factionId": "sorcieres",
    "factionId2": "zaldry",
-   "attack": 8,
-   "life": 6
+   "attack": 6,
+   "life": 2
   },
   {
    "id": "c-kalvan",
@@ -482,7 +482,7 @@
    ],
    "factionId": "descendants",
    "attack": 8,
-   "life": 5
+   "life": 2
   },
   {
    "id": "c-lisvall-ba",
@@ -510,7 +510,7 @@
    ],
    "factionId": "valhelm",
    "attack": 10,
-   "life": 4
+   "life": 6
   },
   {
    "id": "c-rosariel",
@@ -550,8 +550,9 @@
     "69cpj6rp9svofnoshbzs"
    ],
    "factionId": "69cpj6rp9svofnoshbzs",
-   "attack": 7,
-   "life": 7
+   "attack": 5,
+   "life": 1,
+   "ability": "Passif : ne peut être attaqué que quand c'est la seule carte sur le board de son joueur."
   },
   {
    "id": "c-saalafail",
@@ -589,8 +590,8 @@
     "naadrian"
    ],
    "factionId": "naadrian",
-   "attack": 8,
-   "life": 6
+   "attack": 7,
+   "life": 3
   },
   {
    "id": "c-alize-a-diel",
@@ -617,8 +618,8 @@
     "l4h64l9b1kuwrb425pgu"
    ],
    "factionId": "l4h64l9b1kuwrb425pgu",
-   "attack": 4,
-   "life": 7
+   "attack": 7,
+   "life": 4
   },
   {
    "id": "c-colette-du-bois",
@@ -633,7 +634,7 @@
    "factionId": "sorcieres",
    "factionId2": "sirois",
    "attack": 6,
-   "life": 4
+   "life": 3
   },
   {
    "id": "c-dalpa-abigael",
@@ -673,8 +674,8 @@
     "cysars"
    ],
    "factionId": "cysars",
-   "attack": 6,
-   "life": 6
+   "attack": 8,
+   "life": 8
   },
   {
    "id": "c-neona-raxh",
@@ -701,8 +702,8 @@
     "naadrian"
    ],
    "factionId": "naadrian",
-   "attack": 4,
-   "life": 7
+   "attack": 5,
+   "life": 6
   },
   {
    "id": "c-saa-vie",
@@ -727,7 +728,7 @@
     "naadrian"
    ],
    "factionId": "naadrian",
-   "attack": 3,
+   "attack": 0,
    "life": 7
   },
   {
@@ -769,7 +770,7 @@
    "factionId": "valhelm",
    "factionId2": "l4h64l9b1kuwrb425pgu",
    "attack": 4,
-   "life": 7
+   "life": 10
   },
   {
    "id": "c-amon-akar",
@@ -849,7 +850,8 @@
    ],
    "factionId": "automes",
    "attack": 5,
-   "life": 3
+   "life": 3,
+   "flavor": "Cette pierre a l'air très puissante. Puis-je la lécher ?"
   },
   {
    "id": "c-miakrevi",

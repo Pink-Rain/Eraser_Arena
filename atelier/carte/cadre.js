@@ -629,8 +629,21 @@
     const width = W - 2 * 56;
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     let y = rowY + 66;
+    // « Passif : … » ou « Actif : … » : le mot-clé sur sa propre ligne, en petites capitales à la couleur de la rareté.
+    let ability = card.ability || '';
+    const mot = ability.match(/^\s*(Passif|Actif)\s*:\s*/i);
+    if (mot) {
+      ability = ability.slice(mot[0].length);
+      ability = ability.charAt(0).toUpperCase() + ability.slice(1);
+      ctx.save();
+      ctx.font = '700 15px "Cinzel", Georgia, serif'; ctx.fillStyle = touchStyle(ctx, rar);
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+      ctx.fillText(mot[1].charAt(0).toUpperCase() + mot[1].slice(1).toLowerCase(), CX, y - 2);
+      ctx.restore();
+      y += 26;
+    }
     ctx.font = '500 19px "Alegreya Sans", system-ui, sans-serif'; ctx.fillStyle = '#f4efe6';
-    for (const line of wrap(ctx, card.ability || '', width)) { ctx.fillText(line, CX, y); y += 25; }
+    for (const line of wrap(ctx, ability, width)) { ctx.fillText(line, CX, y); y += 25; }
     // En bas de la carte : petit filet centré, puis la citation.
     ctx.font = 'italic 17px "Alegreya", Georgia, serif';
     const lines = card.flavor ? wrap(ctx, '« ' + card.flavor + ' »', width) : [];
