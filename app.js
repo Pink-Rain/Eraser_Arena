@@ -601,11 +601,19 @@ function panneauAdmin() {
       h('p', {}, 'Tout effacer comme au premier lancement : collection, paquets, statistiques, et les 3 paquets de bienvenue.'),
       h('div', { class: 'actions' }, raz));
 
+    // Écouter chaque son sans ouvrir de paquet.
+    const sons = h('div', { class: 'bloc-admin' },
+      h('h3', {}, 'Sons'),
+      h('p', {}, 'Écoute le son de chaque rareté, pour comparer.' + (sonActif() ? '' : ' (Le son est coupé : réactive-le dans l\'écran Paquets.)')),
+      h('div', { class: 'actions' },
+        bouton('Déchirure du paquet', () => sonDechirure(), 'btn discret'),
+        R.RARETES.map((r) => bouton(RAR[r].label, () => sonCarte(RAR[r].rank), 'btn discret'))));
+
     panneau.replaceChildren(
       h('div', { class: 'tete-admin' }, h('h2', {}, 'Mode admin'),
         bouton('Quitter le mode admin', () => { quitterAdmin(); toast('Mode admin quitté'); afficher(); }, 'btn discret')),
       h('p', {}, 'Pour tester tout le jeu. Il ne s\'active que sur ce navigateur, avec le code.'),
-      paquets, truques, cartes, partie);
+      paquets, truques, sons, cartes, partie);
     if (rechercheFocus) champ.focus();
   }
   dessiner();

@@ -13,8 +13,9 @@ Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront e
 - **Paquets** : 5 cartes par paquet. Le paquet se déchire, les cartes restent en pile face cachée,
   la moins rare dessus. Survoler la carte du dessus montre l'aura de sa rareté (sur téléphone : en la
   touchant) ; un clic la retourne, puis elle va se ranger dessous et la suivante attend. Chaque carte fait
-  un bruit de page, enrichi selon la rareté (note, accord, arpège, coup sourd pour la légendaire) ;
-  le son se coupe d'un bouton. La dernière carte est toujours au moins rare.
+  un bruit de page ; plus elle est rare, plus on ajoute de matière (souffle d'air, impact sourd de plus
+  en plus lourd, crépitements, grondement pour la légendaire), sans aucune note de musique ;
+  le son se coupe d'un bouton, et le mode admin permet d'écouter chaque rareté. La dernière carte est toujours au moins rare.
   Taux par carte (cartes 1 à 4) : très commune 42 %, commune 30 %, rare 17 %, super rare 8 %,
   épique 2,5 %, légendaire 0,5 %. Dernière carte : rare 62 %, super rare 25 %, épique 9 %, légendaire 4 %.
   Pas de garantie anti-malchance.
