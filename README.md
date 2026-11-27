@@ -1,19 +1,34 @@
 # Eraser Arena
 
-Le jeu de cartes du monde d'Eraser. Les héros, les dieux et les monstres du Codex, chacun en carte.
+Le jeu de cartes du monde d'Eraser : ouvrir des paquets, collectionner les héros, les dieux et les monstres du Codex, puis (bientôt) les faire combattre.
 
 **La page :** https://pink-rain.github.io/Eraser_Arena/ (une fois GitHub Pages activé, voir plus bas)
 
+## Le jeu
+
+Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront ensuite.
+
+- **Accueil** : tes paquets, le paquet du jour (gratuit, un par jour, renouvelé à minuit), ta collection
+  par rareté, tes dernières cartes.
+- **Paquets** : 5 cartes par paquet, révélées de la plus modeste à la plus rare ; la dernière est au moins
+  super rare. Avant d'être retournées, les grandes raretés brillent déjà ; une épique ou une légendaire
+  éclate en étincelles. Les chances de tirage sont affichées.
+- **Collection** : toutes les cartes, celles qui manquent en creux, le nombre d'exemplaires.
+- **Profil** : tes chiffres, et enregistrer ou recharger ta sauvegarde (pour changer d'appareil).
+- Trois paquets de bienvenue au premier lancement. La sauvegarde vit dans le navigateur.
+
 ## Ce qu'il y a dans le dépôt
 
-- `index.html` : la page publique. Toutes les cartes du Codex, rangées par rareté, avec une recherche,
-  un filtre par faction (une faction montre aussi ses sous-factions) et un filtre par rareté.
-  Une carte s'ouvre en grand ; un clic la retourne ; les flèches (ou un balayage sur téléphone) passent à la voisine.
+- `index.html`, `app.js`, `app.css` : l'appli (les écrans).
+- `jeu/regles.js` : les règles, en fonctions pures (tirage, paquet du jour, collection). Les chances
+  de chaque rareté et la taille des paquets se règlent en haut du fichier.
+- `jeu/stockage.js` : la sauvegarde. Aujourd'hui dans le navigateur ; demain, un compte en ligne
+  prendra sa place sans toucher aux règles.
+- `jeu/donnees.js` : lit les cartes dans `data/codex.json`. `jeu/rendu.js` : les dessine (avec un cache).
+- `codex.html` : le Codex, toutes les cartes du jeu, même celles qu'on n'a pas.
 - `data/codex.json` : les fiches et les étiquettes du Codex d'Eraser, exportées de l'artefact.
-  C'est la seule source de la page : la mettre à jour suffit à changer les cartes affichées.
-- `atelier/` : le labo des visuels (cadres, logos, silhouettes). La page réutilise directement
-  `atelier/carte/cadre.js`, `logos.js` et `silhouettes.js` : une carte retouchée dans l'atelier
-  change aussi sur la page. Voir `atelier/README.md`.
+- `atelier/` : le labo des visuels (cadres, logos, silhouettes), utilisé directement par le jeu.
+- `tests/` : les tests des règles (`npm test`, sans rien installer).
 
 ## Activer la page GitHub
 
