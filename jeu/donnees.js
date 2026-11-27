@@ -17,7 +17,28 @@ export async function chargerCodex(base = '') {
     const fs = (fac.cartes[e.id] || []).filter((id) => factions.has(id)).slice(0, 2);
     return fs.length ? { ...e, factions: fs } : e;
   });
-  return { tags, factions, cartes, parId: new Map(cartes.map((c) => [c.id, c])), exporteLe: data.exportedAt };
+  const exemples = cartesExemples(factions, cartes);
+  return {
+    tags, factions, cartes, exemples, exporteLe: data.exportedAt,
+    parId: new Map([...cartes, ...exemples].map((c) => [c.id, c])),
+  };
+}
+
+// Les cartes exemples : pour chaque faction, une carte par rareté qu'aucune vraie carte n'occupe encore
+// (une bicolore compte pour ses deux factions). Elles ne servent qu'à voir à quoi ressemblera la carte :
+// elles sont dans le Codex, jamais dans les paquets ni dans la collection.
+// Dès qu'une vraie carte prend la place, l'exemple disparaît tout seul.
+export const RARETES_EXEMPLES = ['legendaire', 'epique', 'superrare', 'rare', 'commune', 'trescommune'];
+export function cartesExemples(factions, cartes) {
+  const prises = new Set(cartes.flatMap((c) => (c.factions || []).map((f) => f + '|' + c.rarity)));
+  const out = [];
+  for (const f of factions.keys()) for (const r of RARETES_EXEMPLES) {
+    if (prises.has(f + '|' + r)) continue;
+    out.push({ id: `ex-${f}-${r}`, exemple: true, kind: 'personnage', rarity: r, factions: [f], tagIds: [],
+      title: 'Titre', honor: 'Titre honorifique', ability: 'Capacité', flavor: 'Citation', attack: 'A', life: 'V',
+      description: 'Carte exemple : la place d\'une future carte de cette faction et de cette rareté.' });
+  }
+  return out;
 }
 
 // Le type de la fiche : l'étiquette choisie comme « faction » dans le Codex (ou la première).
@@ -46,7 +67,7 @@ export function carteDe(codex, e) {
     const [f1, f2] = e.factions.map((id) => codex.factions.get(id));
     faction = apparenceFaction(f1, type1.sil);
     faction2 = f2 ? apparenceFaction(f2, type2 ? type2.sil : null) : null;
-    typeLabel = type1.short + (type2 ? ' · ' + type2.short : '');
+    typeLabel = e.exemple ? 'Carte exemple' : type1.short + (type2 ? ' · ' + type2.short : '');
   }
   return {
     name: e.title || 'Sans nom', honor: e.honor || '', rarity: e.rarity || 'commune',
@@ -58,6 +79,7 @@ export function carteDe(codex, e) {
 
 // Le nom court du type, pour les légendes sous les cartes.
 export function typeCourt(codex, e) {
+  if (e.exemple) return 'Exemple';
   return typesDe(e).filter(Boolean).map((id) => apparenceType(codex.tags, id).short).join(' · ');
 }
 

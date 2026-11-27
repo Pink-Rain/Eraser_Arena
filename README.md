@@ -13,22 +13,24 @@ Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront e
 - **Paquets** : 5 cartes par paquet, révélées de la plus modeste à la plus rare ; la dernière est au moins
   super rare. Avant d'être retournées, les grandes raretés brillent déjà ; une épique ou une légendaire
   éclate en étincelles. Les chances de tirage sont affichées.
-- **Collection** : toutes les cartes, celles qui manquent en creux, le nombre d'exemplaires.
+- **Collection** : seulement tes cartes, avec leur nombre d'exemplaires ; triées par rareté ou par faction.
+- **Codex** : toutes les cartes du jeu, et des cartes exemples pour chaque rareté qu'une faction n'a pas encore
+  (elles ne tombent jamais dans les paquets).
 - **Profil** : tes chiffres, et enregistrer ou recharger ta sauvegarde (pour changer d'appareil).
 - Trois paquets de bienvenue au premier lancement. La sauvegarde vit dans le navigateur.
 - **Mode admin** (pour tester) : ouvrir la page avec `?admin` à la fin de l'adresse
   (https://pink-rain.github.io/Eraser_Arena/?admin). Dans le profil : ajouter des paquets, remettre le
   paquet du jour, truquer les prochains paquets (que des légendaires…), se donner toutes les cartes,
-  voir toute la collection. Il reste actif sur ce navigateur jusqu'à « Quitter le mode admin ».
+  vider la collection. Il reste actif sur ce navigateur jusqu'à « Quitter le mode admin ».
 
 ## Factions et types
 
 - La **faction** (Adepte du sang, du feu, de la vie et la mort, d'Hepo, des océans, de la nature,
-  de Filitus, ou Neutre) donne à la carte sa couleur et son logo. Une carte peut en avoir deux (bicolore).
+  de Filitus, de la technologie, ou Neutre) donne à la carte sa couleur et son logo. Une carte peut en avoir deux (bicolore).
   Elles sont définies dans `data/factions.json`, avec la faction de chaque carte (`"cartes"`).
 - Le **type** (le peuple ou le groupe du Codex : Divinités, Titans, L'Humanité…) donne la silhouette
   et reste écrit au dos de la carte.
-- Une carte sans faction garde pour l'instant l'apparence de son type.
+- Une carte sans faction garde l'apparence de son type.
 
 ## Ce qu'il y a dans le dépôt
 
@@ -38,7 +40,7 @@ Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront e
 - `jeu/stockage.js` : la sauvegarde. Aujourd'hui dans le navigateur ; demain, un compte en ligne
   prendra sa place sans toucher aux règles.
 - `jeu/donnees.js` : lit les cartes dans `data/codex.json`. `jeu/rendu.js` : les dessine (avec un cache).
-- `codex.html` : le Codex, toutes les cartes du jeu, même celles qu'on n'a pas.
+- `codex.html` : l'ancienne adresse du Codex ; elle renvoie vers l'écran Codex du jeu.
 - `data/codex.json` : les fiches et les étiquettes du Codex d'Eraser, exportées de l'artefact.
 - `data/factions.json` : les factions du jeu et la faction de chaque carte.
 - `atelier/` : le labo des visuels (cadres, logos, silhouettes), utilisé directement par le jeu.
