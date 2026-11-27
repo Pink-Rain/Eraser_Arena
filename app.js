@@ -4,6 +4,7 @@ import { chargerCodex, carteDe, enfants, descendance, typeCourt } from './jeu/do
 import * as R from './jeu/regles.js';
 import { stockageLocal as stockage } from './jeu/stockage.js';
 import { face, revers, dos, prechauffer } from './jeu/rendu.js';
+import { sonCarte, sonDechirure, sonActif, basculerSon } from './jeu/sons.js';
 
 /* ---------- petits outils ---------- */
 const $ = (id) => document.getElementById(id);
@@ -223,6 +224,7 @@ function scelle(zone) {
     const r = R.ouvrirPaquet(etat, admin.actif ? R.reserveForcee(codex.jeu, admin.forcer, admin.forcerFaction) : codex.jeu, hasard);
     changer(r.etat); // sauvegardé tout de suite : recharger la page ne relance pas le tirage
     r.tirage.forEach((t) => { face(t.id, carte(t.id)); }); // dessinées pendant que le paquet se déchire
+    sonDechirure();
     if (sansAnimation()) return devoiler(zone, r.tirage);
     p.classList.add('dechire');
     setTimeout(() => devoiler(zone, r.tirage), 780);
@@ -233,57 +235,113 @@ function scelle(zone) {
     h('p', { class: 'stock' }, etat.paquets > 1 ? `Encore ${etat.paquets - 1} après celui-ci` : 'C\'est ton dernier paquet'),
     admin.actif && (admin.forcer || admin.forcerFaction) ? h('p', { class: 'pastille-admin' }, 'Admin : paquet truqué — '
       + [admin.forcer && RAR[admin.forcer].label.toLowerCase(), admin.forcerFaction && codex.factions.get(admin.forcerFaction).nom].filter(Boolean).join(', ')) : null,
-    tableChances()));
+    tableChances(),
+    boutonSon()));
+}
+
+// Le paquet ouvert : les cartes en pile, face cachée, la moins rare dessus, la plus rare tout en bas.
+// On retourne celle du dessus ; elle se montre un instant, puis va se ranger dans la rangée en dessous,
+// et la suivante attend. L'aura de la rareté ne se voit qu'en survolant la carte du dessus
+// (sur téléphone : en la touchant, juste avant qu'elle se retourne).
+const pause = (ms) => new Promise((r) => setTimeout(r, sansAnimation() ? Math.min(ms, 60) : ms));
+
+function boutonSon() {
+  const b = h('button', { class: 'pilule son', type: 'button' });
+  const maj = () => { const on = sonActif(); b.textContent = on ? '♪ Son activé' : '♪ Son coupé'; b.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+  b.addEventListener('click', () => { basculerSon(); maj(); });
+  maj();
+  return b;
 }
 
 function devoiler(zone, tirage) {
   const ids = tirage.map((t) => t.id);
-  const rangee = h('div', { class: 'tirage' });
+  const pile = h('div', { class: 'pile' });
+  const rangee = h('div', { class: 'revelees', 'aria-label': 'Cartes retournées' });
+  const survol = matchMedia('(hover: hover)').matches;
+  const consigne = h('p', { class: 'consigne' }, survol ? 'Survole la carte du dessus pour sentir sa rareté, puis clique pour la retourner' : 'Touche la carte du dessus pour la retourner');
   const apres = h('div', { class: 'apres' });
-  let restantes = tirage.length;
-
-  const fin = () => remplacer(apres,
-    etat.paquets ? h('button', { class: 'btn principal', type: 'button', onclick: () => scelle(zone) }, `Ouvrir le suivant (${etat.paquets})`) : null,
-    h('a', { class: 'btn', href: '#collection' }, 'Voir la collection'),
-    h('a', { class: 'btn discret', href: '#accueil' }, 'Accueil'));
+  const n = tirage.length;
 
   const cartes = tirage.map((t, i) => {
     const c = carte(t.id), r = RAR[t.rarity];
-    const el = h('button', { class: 'tiree', type: 'button', style: `--i:${i};--c:${r.c}`, 'data-rang': r.rank,
-      'aria-label': 'Carte face cachée ' + (i + 1) + '. La retourner' },
+    const el = h('button', { class: 'carte-pile', type: 'button', style: `--c:${r.c};--s:${i % 2 ? -1 : 1};z-index:${n - i}`, 'data-rang': r.rank, tabindex: '-1',
+      'aria-label': `Carte ${i + 1} sur ${n}, face cachée. La retourner` },
       h('span', { class: 'tourne' }, h('span', { class: 'face dos' }, dos()), h('span', { class: 'face avant' }, face(t.id, c))),
       h('span', { class: 'marque-carte' + (t.nouvelle ? ' nouvelle' : '') }, t.nouvelle ? 'Nouvelle !' : '×' + t.exemplaires));
-    el.addEventListener('click', () => {
-      if (el.classList.contains('retournee')) return visionneuse(ids, i);
-      retourner(el, t, c);
-      if (--restantes === 0) fin();
-    });
-    el._retourner = () => { if (!el.classList.contains('retournee')) { retourner(el, t, c); if (--restantes === 0) fin(); } };
+    // Sur écran tactile, pas de survol : l'aura s'allume au toucher, juste avant le retournement.
+    el.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' && el.classList.contains('dessus')) { el.dataset.toucher = '1'; el.classList.add('aura'); } });
+    el.addEventListener('click', () => { if (!el.classList.contains('dessus')) return; if (occupe) { if (passer) passer(); } else reveler(); });
     return el;
   });
-  rangee.append(...cartes);
-  apres.append(h('button', { class: 'btn', type: 'button', onclick: (e) => {
-    e.currentTarget.disabled = true;
-    cartes.forEach((el, i) => setTimeout(() => el._retourner(), sansAnimation() ? 0 : i * 320));
-  } }, 'Tout retourner'));
-  zone.replaceChildren(rangee, apres);
+  pile.append(...cartes);
+
+  let i = 0, occupe = false, passer = null;
+  // Une attente qu'un nouveau toucher peut écourter (pour aller plus vite).
+  const attente = (ms) => new Promise((r) => { const t = setTimeout(() => { passer = null; r(); }, sansAnimation() ? Math.min(ms, 60) : ms); passer = () => { clearTimeout(t); passer = null; r(); }; });
+  const placer = () => cartes.forEach((el, k) => {
+    const d = k - i;
+    el.style.setProperty('--d', d);
+    el.classList.toggle('dessus', d === 0);
+    el.tabIndex = d === 0 ? 0 : -1;
+  });
+  placer();
+
+  async function reveler(rapide = false) {
+    if (occupe || i >= n) return;
+    occupe = true;
+    const el = cartes[i], t = tirage[i], c = carte(t.id), rang = RAR[t.rarity].rank;
+    if (el.dataset.toucher && !rapide) await pause(420);
+    el.classList.add('aura', 'retournee');
+    el.setAttribute('aria-label', c.name + ' — ' + RAR[t.rarity].label + (t.nouvelle ? ', nouvelle' : ', exemplaire ' + t.exemplaires));
+    sonCarte(rang);
+    eclat(el, rang);
+    await attente(rapide ? 520 : [700, 700, 850, 1100, 1500, 1900][rang]);
+    // Elle va se ranger en dessous ; la suivante remonte sur le dessus.
+    el.classList.add('part');
+    await pause(rapide ? 160 : 260);
+    el.remove();
+    const k = i;
+    const mini = h('button', { class: 'mini', type: 'button', style: '--c:' + RAR[t.rarity].c,
+      'aria-label': c.name + ' — ' + RAR[t.rarity].label + '. Ouvrir en grand', onclick: () => visionneuse(ids, k) },
+      face(t.id, c), h('span', { class: 'marque-carte' + (t.nouvelle ? ' nouvelle' : '') }, t.nouvelle ? 'Nouvelle !' : '×' + t.exemplaires));
+    rangee.append(mini);
+    i++;
+    placer();
+    occupe = false;
+    if (i === n) fin();
+    else if (!rapide) cartes[i].focus({ preventScroll: true });
+  }
+
+  const toutRetourner = h('button', { class: 'btn', type: 'button', onclick: async () => {
+    toutRetourner.disabled = true;
+    while (i < n) { if (occupe) await pause(80); else await reveler(true); }
+  } }, 'Tout retourner');
+
+  function fin() {
+    pile.remove(); consigne.remove();
+    rangee.classList.add('finie');
+    remplacer(apres,
+      etat.paquets ? h('button', { class: 'btn principal', type: 'button', onclick: () => scelle(zone) }, `Ouvrir le suivant (${etat.paquets})`) : null,
+      h('a', { class: 'btn', href: '#collection' }, 'Voir la collection'),
+      h('a', { class: 'btn discret', href: '#accueil' }, 'Accueil'));
+  }
+
+  apres.append(toutRetourner, boutonSon());
+  zone.replaceChildren(h('div', { class: 'ouverture' }, pile, consigne, rangee, apres));
   cartes[0].focus({ preventScroll: true });
 }
 
-function retourner(el, t, c) {
-  el.classList.add('retournee');
-  el.setAttribute('aria-label', c.name + ' — ' + RAR[t.rarity].label + (t.nouvelle ? ', nouvelle' : ', exemplaire ' + t.exemplaires) + '. Ouvrir en grand');
-  const rang = RAR[t.rarity].rank;
-  if (rang < 4 || sansAnimation()) return;
-  // Épique et légendaire : un éclat de lumière et des étincelles ; la légendaire fait trembler l'écran.
-  const n = rang === 5 ? 34 : 20;
-  const eclat = h('span', { class: 'eclat', 'aria-hidden': 'true' }, h('span', { class: 'flash' }),
+// Super rare : un éclair ; épique : un éclat et des étincelles ; légendaire : plus, et l'écran tremble.
+function eclat(el, rang) {
+  if (rang < 3 || sansAnimation()) return;
+  const n = rang === 5 ? 36 : rang === 4 ? 22 : 0;
+  const e = h('span', { class: 'eclat', 'aria-hidden': 'true' }, h('span', { class: 'flash' }),
     Array.from({ length: n }, (_, k) => {
-      const a = (k / n) * Math.PI * 2 + Math.random() * .4, d = 90 + Math.random() * (rang === 5 ? 150 : 90);
+      const a = (k / n) * Math.PI * 2 + Math.random() * .4, d = 110 + Math.random() * (rang === 5 ? 170 : 100);
       return h('span', { class: 'p', style: `--x:${Math.cos(a) * d}px;--y:${Math.sin(a) * d}px;--d:${200 + Math.random() * 250}` });
     }));
-  el.append(eclat);
-  setTimeout(() => eclat.remove(), 1700);
+  el.append(e);
+  setTimeout(() => e.remove(), 1700);
   if (rang === 5) { document.body.classList.add('secousse'); setTimeout(() => document.body.classList.remove('secousse'), 900); }
 }
 
@@ -434,7 +492,7 @@ function profil(main) {
 
 // L'entrée du mode admin, en bas du profil : un code, pour que les amis n'y touchent pas.
 // Le code n'est pas écrit en clair ici, seulement son empreinte (pour le changer, il faut recalculer l'empreinte).
-const EMPREINTE_ADMIN = 'afcc8e19';
+const EMPREINTE_ADMIN = '527fbec4';
 const empreinte = (s) => { let x = 0x811c9dc5; for (const ch of s) { x ^= ch.codePointAt(0); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(16); };
 function entreeAdmin() {
   const champ = h('input', { type: 'password', placeholder: 'Code admin', 'aria-label': 'Code admin', autocomplete: 'off' });
