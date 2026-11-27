@@ -108,3 +108,25 @@ test('outils du mode admin', async () => {
   assert.ok(r.tirage.every((t) => t.rarity === 'legendaire'));
   assert.equal(reserveForcee(reserve, ''), reserve);
 });
+
+test('répartition des factions et cartes exemples', async () => {
+  const { cartesExemples, RARETES_EXEMPLES } = await import('../jeu/donnees.js');
+  const fac = JSON.parse(fs.readFileSync(new URL('../data/factions.json', import.meta.url)));
+  const ids = new Set(fac.factions.map((f) => f.id));
+  for (const [carte, fs_] of Object.entries(fac.cartes)) {
+    assert.ok(reserve.some((c) => c.id === carte), `carte inconnue : ${carte}`);
+    assert.ok(fs_.length >= 1 && fs_.length <= 2 && fs_.every((f) => ids.has(f)), `factions de ${carte}`);
+  }
+  assert.equal(Object.keys(fac.cartes).length, reserve.length, 'chaque carte a sa faction');
+  const couleurs = fac.factions.map((f) => f.couleur.toLowerCase());
+  assert.equal(new Set(couleurs).size, couleurs.length, 'deux factions jamais de la même couleur');
+  const cartes = reserve.map((c) => ({ ...c, factions: fac.cartes[c.id] }));
+  const ex = cartesExemples(new Map(fac.factions.map((f) => [f.id, f])), cartes);
+  // Chaque couple faction × rareté a soit une vraie carte, soit exactement un exemple.
+  for (const f of ids) for (const r of RARETES_EXEMPLES) {
+    const vraies = cartes.filter((c) => c.rarity === r && c.factions.includes(f)).length;
+    const exs = ex.filter((e) => e.rarity === r && e.factions[0] === f).length;
+    assert.equal(exs, vraies ? 0 : 1, `${f} ${r}`);
+  }
+  assert.ok(ex.every((e) => e.exemple));
+});

@@ -25,6 +25,20 @@
     ctx.beginPath(); for (let i = 0; i <= 36; i += 1) { const k = i / 36, rad = r * (1 - 0.7 * k), an = st + sens * turns * TAU * k; const px = cx + Math.cos(an) * rad, py = cy + Math.sin(an) * rad; if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
     ctx.lineWidth = w; ctx.stroke(); } });
   const strokeFn = (w, draw) => ({ fn: (ctx) => { ctx.lineWidth = w; draw(ctx); } });
+  // Rouage de rayon R (au bout des dents), n dents, tourné de rot ; moyeu et anneau intérieur.
+  const engrenage = (cx, cy, R, n, rot) => ({ fn: (ctx) => {
+    const r0 = R * 0.78, s = TAU / n;
+    ctx.beginPath();
+    for (let k = 0; k < n; k += 1) {
+      const a = rot + k * s;
+      [[a - s * 0.5, r0], [a - s * 0.24, r0], [a - s * 0.15, R], [a + s * 0.15, R], [a + s * 0.24, r0]].forEach(([an, rad], i) => {
+        const x = cx + Math.cos(an) * rad, y = cy + Math.sin(an) * rad; if (k === 0 && i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+    }
+    ctx.closePath(); ctx.lineWidth = t; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, R * 0.42, 0, TAU); ctx.lineWidth = f; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, R * 0.16, 0, TAU); ctx.fill();
+  } });
 
   const LOGOS = {
     // Mortels : sablier.
@@ -309,6 +323,11 @@
       { op: 'cut', fn: circle(46.5, 50.5, 2.6) },
       ln('M50 21 V8 M32 25 L26 14 M68 25 L74 14 M18 33 L9 26 M82 33 L91 26', f),
       dot(50, 6, 2.2),
+    ],
+    // Adepte de la technologie : deux rouages qui s'engrènent.
+    'f-technologie': [
+      engrenage(39, 60, 29, 11, 0), engrenage(72, 28, 18, 8, Math.PI / 8),
+      dot(88, 62, 2), dot(14, 22, 1.8), ln('M84 72 L92 80 M10 30 L18 36', f),
     ],
     // Neutre : une balance à l'équilibre.
     'f-neutre': [

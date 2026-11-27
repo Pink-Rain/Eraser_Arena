@@ -1,14 +1,244 @@
 {
  "note": "Les factions du jeu : elles donnent à la carte sa couleur et son logo. Le type (peuple, groupe du Codex) reste écrit au dos. Une carte peut avoir deux factions (bicolore).",
  "factions": [
-  { "id": "sang", "nom": "Adepte du sang", "court": "Sang", "couleur": "#6e1423", "logo": "f-sang" },
-  { "id": "feu", "nom": "Adepte du feu", "court": "Feu", "couleur": "#d2481f", "logo": "f-feu" },
-  { "id": "vie-mort", "nom": "Adepte de la vie et la mort", "court": "Vie et mort", "couleur": "#4b1d6e", "logo": "f-vie-mort" },
-  { "id": "hepo", "nom": "Adepte d'Hepo", "court": "Hepo", "couleur": "#978daf", "logo": "f-hepo" },
-  { "id": "oceans", "nom": "Adepte des océans", "court": "Océans", "couleur": "#1c6ea4", "logo": "f-oceans" },
-  { "id": "nature", "nom": "Adepte de la nature", "court": "Nature", "couleur": "#3d7d38", "logo": "f-nature" },
-  { "id": "filitus", "nom": "Adepte de Filitus", "court": "Filitus", "couleur": "#d6c39c", "logo": "f-filitus" },
-  { "id": "neutre", "nom": "Neutre", "court": "Neutre", "couleur": "#7c7f87", "logo": "f-neutre" }
+  {
+   "id": "sang",
+   "nom": "Adepte du sang",
+   "court": "Sang",
+   "couleur": "#6e1423",
+   "logo": "f-sang"
+  },
+  {
+   "id": "feu",
+   "nom": "Adepte du feu",
+   "court": "Feu",
+   "couleur": "#d2481f",
+   "logo": "f-feu"
+  },
+  {
+   "id": "vie-mort",
+   "nom": "Adepte de la vie et la mort",
+   "court": "Vie et mort",
+   "couleur": "#4b1d6e",
+   "logo": "f-vie-mort"
+  },
+  {
+   "id": "hepo",
+   "nom": "Adepte d'Hepo",
+   "court": "Hepo",
+   "couleur": "#978daf",
+   "logo": "f-hepo"
+  },
+  {
+   "id": "oceans",
+   "nom": "Adepte des océans",
+   "court": "Océans",
+   "couleur": "#1c6ea4",
+   "logo": "f-oceans"
+  },
+  {
+   "id": "nature",
+   "nom": "Adepte de la nature",
+   "court": "Nature",
+   "couleur": "#3d7d38",
+   "logo": "f-nature"
+  },
+  {
+   "id": "filitus",
+   "nom": "Adepte de Filitus",
+   "court": "Filitus",
+   "couleur": "#d6c39c",
+   "logo": "f-filitus"
+  },
+  {
+   "id": "technologie",
+   "nom": "Adepte de la technologie",
+   "court": "Technologie",
+   "couleur": "#5e4b3c",
+   "logo": "f-technologie"
+  },
+  {
+   "id": "neutre",
+   "nom": "Neutre",
+   "court": "Neutre",
+   "couleur": "#7c7f87",
+   "logo": "f-neutre"
+  }
  ],
- "cartes": {}
+ "cartes": {
+  "0e81xgu7apax8dq5ib8r": [
+   "vie-mort"
+  ],
+  "c-aarakis": [
+   "neutre"
+  ],
+  "c-aldmarald": [
+   "sang"
+  ],
+  "c-alize-a-diel": [
+   "sang",
+   "vie-mort"
+  ],
+  "c-amon-akar": [
+   "vie-mort"
+  ],
+  "c-amrar-ga": [
+   "vie-mort"
+  ],
+  "c-animenor": [
+   "feu",
+   "nature"
+  ],
+  "c-aprete": [
+   "neutre"
+  ],
+  "c-avadres-l-impuissant": [
+   "hepo"
+  ],
+  "c-calamite": [
+   "vie-mort"
+  ],
+  "c-cauchemar": [
+   "hepo"
+  ],
+  "c-colette-du-bois": [
+   "hepo",
+   "nature"
+  ],
+  "c-constante-desang": [
+   "technologie"
+  ],
+  "c-dalpa-abigael": [
+   "sang",
+   "vie-mort"
+  ],
+  "c-deonna": [
+   "hepo"
+  ],
+  "c-desespoir": [
+   "hepo"
+  ],
+  "c-dirakas": [
+   "nature"
+  ],
+  "c-erasersias": [
+   "nature"
+  ],
+  "c-etel-lefeuvre-lelenya": [
+   "technologie",
+   "vie-mort"
+  ],
+  "c-hastur": [
+   "hepo"
+  ],
+  "c-hector-funfriegen-von-derber": [
+   "nature",
+   "technologie"
+  ],
+  "c-hera": [
+   "sang"
+  ],
+  "c-huacolt": [
+   "nature",
+   "vie-mort"
+  ],
+  "c-kahon": [
+   "feu"
+  ],
+  "c-kal-go": [
+   "hepo"
+  ],
+  "c-kalvan": [
+   "neutre"
+  ],
+  "c-leopold-de-ponce": [
+   "hepo"
+  ],
+  "c-lila": [
+   "vie-mort",
+   "sang"
+  ],
+  "c-lisvall-ba": [
+   "sang"
+  ],
+  "c-loup-le-baud": [
+   "vie-mort"
+  ],
+  "c-marggorn": [
+   "feu"
+  ],
+  "c-meerymah-al-flede": [
+   "vie-mort",
+   "oceans"
+  ],
+  "c-miakrevi": [
+   "oceans"
+  ],
+  "c-neona-raxh": [
+   "nature",
+   "hepo"
+  ],
+  "c-pere-saltim": [
+   "neutre"
+  ],
+  "c-renanda": [
+   "oceans"
+  ],
+  "c-rinritargar": [
+   "feu"
+  ],
+  "c-rosariel": [
+   "sang"
+  ],
+  "c-rotas-qhat": [
+   "oceans"
+  ],
+  "c-ruth": [
+   "vie-mort",
+   "nature"
+  ],
+  "c-saa-vie": [
+   "vie-mort"
+  ],
+  "c-saalafail": [
+   "hepo"
+  ],
+  "c-sarar": [
+   "technologie"
+  ],
+  "c-sieg-korvin": [
+   "vie-mort"
+  ],
+  "c-sirius-brimstone": [
+   "vie-mort"
+  ],
+  "c-syrarielle-mantis": [
+   "vie-mort"
+  ],
+  "c-theodoas": [
+   "vie-mort"
+  ],
+  "c-ulris": [
+   "vie-mort"
+  ],
+  "c-umburz": [
+   "sang"
+  ],
+  "c-umis-grise-loeil-de-la-descruction": [
+   "neutre"
+  ],
+  "c-vasile-davorin": [
+   "sang"
+  ],
+  "c-ymrid": [
+   "nature"
+  ],
+  "c-za-lelelele": [
+   "hepo",
+   "vie-mort"
+  ],
+  "c-zajaex-us": [
+   "sang"
+  ]
+ }
 }
