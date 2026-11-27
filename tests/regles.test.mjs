@@ -165,3 +165,21 @@ test('admin : paquets à volonté, cartes une par une, paquets truqués par fact
   assert.ok(sangLeg.every((c) => c.rarity === 'legendaire' && c.factions.includes('sang')));
   assert.equal(reserveForcee(avecFactions, 'legendaire', 'inconnue').length, avecFactions.length, 'rien ne correspond : réserve entière');
 });
+
+test('admin : paquet échantillon, une carte de chaque rareté', async () => {
+  const { tirerEchantillon, reserveForcee } = await import('../jeu/regles.js');
+  const h = graine(21);
+  for (let i = 0; i < 200; i++) {
+    const p = tirerEchantillon(reserveJeu, h);
+    assert.deepEqual(p.map((c) => c.rarity), ['commune', 'rare', 'superrare', 'epique', 'legendaire']);
+  }
+  // Avec une faction : chaque carte en est (les exemples garantissent chaque rareté).
+  const feu = tirerEchantillon(reserveForcee(reserveJeu, '', 'feu'), h);
+  assert.equal(feu.length, 5);
+  assert.ok(feu.every((c) => c.factions.includes('feu')));
+  // Ouvert comme un paquet normal : 5 cartes, un paquet en moins.
+  const r = ouvrirPaquet(nouvelEtat(), reserveJeu, h, new Date(), tirerEchantillon(reserveJeu, h));
+  assert.equal(r.tirage.length, 5);
+  assert.equal(r.etat.paquets, PAQUETS_DE_BIENVENUE - 1);
+  assert.equal(r.tirage.at(-1).rarity, 'legendaire');
+});

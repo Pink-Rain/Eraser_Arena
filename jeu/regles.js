@@ -118,9 +118,10 @@ export function tirerPaquet(reserve, hasard = Math.random, taille = TAILLE_PAQUE
 
 // Ouvre un paquet : retire un paquet du stock, ajoute les cartes à la collection.
 // Rend le nouvel état et le tirage, chaque carte marquée nouvelle ou non.
-export function ouvrirPaquet(etat, reserve, hasard = Math.random, maintenant = new Date()) {
+// cartesImposees : un tirage déjà choisi (paquet échantillon du mode admin) au lieu du hasard.
+export function ouvrirPaquet(etat, reserve, hasard = Math.random, maintenant = new Date(), cartesImposees = null) {
   if (etat.paquets <= 0) throw new Error('Plus de paquet à ouvrir');
-  const cartes = tirerPaquet(reserve, hasard);
+  const cartes = cartesImposees || tirerPaquet(reserve, hasard);
   const collection = { ...etat.collection };
   const tirage = cartes.map((c) => {
     const avant = collection[c.id] || 0;
@@ -180,6 +181,15 @@ export function fixerExemplaires(etat, id, n) {
   if (v) collection[id] = v; else delete collection[id];
   return { ...etat, collection };
 }
+// Le paquet échantillon (mode admin) : une carte de chaque rareté demandée, de la plus modeste à la plus rare.
+// Une rareté sans aucune carte dans la réserve est simplement sautée.
+export const RARETES_ECHANTILLON = ['commune', 'rare', 'superrare', 'epique', 'legendaire'];
+export function tirerEchantillon(reserve, hasard = Math.random, raretes = RARETES_ECHANTILLON) {
+  const groupes = parRarete(reserve);
+  return [...raretes].sort((a, b) => RANG[a] - RANG[b]).filter((r) => groupes.has(r))
+    .map((r) => { const g = groupes.get(r); return g[Math.floor(hasard() * g.length)]; });
+}
+
 // La réserve d'un paquet truqué : seulement une rareté et/ou une faction.
 // Si rien ne correspond, on garde la réserve entière plutôt qu'un paquet vide.
 export function reserveForcee(reserve, rarete = '', faction = '') {
