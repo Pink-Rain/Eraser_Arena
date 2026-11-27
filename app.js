@@ -159,7 +159,7 @@ function accueil(main) {
   t.append(jour);
 
   // Collection.
-  const pr = R.progression(etat, codex.cartes);
+  const pr = R.progression(etat, codex.jeu);
   t.append(h('section', { class: 'panneau p-collection', 'aria-label': 'Ta collection' },
     h('h2', {}, 'Collection'),
     h('div', { class: 'grand-nombre' }, String(pr.possedees), h('small', {}, 'sur ' + pr.total + ' cartes')),
@@ -189,14 +189,14 @@ function accueil(main) {
 /* ---------- ouverture de paquets ---------- */
 function paquets(main) {
   main.append(entete('Paquets', 'Ouvrir un paquet',
-    `${R.TAILLE_PAQUET} cartes par paquet, révélées de la plus modeste à la plus rare. La dernière est au moins ${RAR[R.GARANTIE_DERNIERE].label.toLowerCase()}.`));
+    `${R.TAILLE_PAQUET} cartes par paquet, révélées de la plus modeste à la plus rare. La dernière est toujours au moins rare.`));
   const zone = h('div');
   main.append(zone);
   scelle(zone);
 }
 
 function tableChances() {
-  const ord = R.chances(codex.cartes), der = R.chances(codex.cartes, R.GARANTIE_DERNIERE);
+  const ord = R.chances(codex.jeu), der = R.chances(codex.jeu, true);
   const pc = (x) => (x * 100 >= 10 ? Math.round(x * 100) : (x * 100).toFixed(1).replace('.', ',')) + ' %';
   return h('details', { class: 'chances' }, h('summary', {}, 'Chances de tirage'),
     h('p', { style: 'margin:8px 0 0' }, 'Pour chacune des quatre premières cartes :'),
@@ -220,7 +220,7 @@ function scelle(zone) {
   let parti = false;
   const p = paquetVisuel({ 'aria-label': 'Ouvrir le paquet', onclick: () => {
     if (parti) return; parti = true;
-    const r = R.ouvrirPaquet(etat, admin.actif ? R.reserveForcee(codex.cartes, admin.forcer, admin.forcerFaction) : codex.cartes, hasard);
+    const r = R.ouvrirPaquet(etat, admin.actif ? R.reserveForcee(codex.jeu, admin.forcer, admin.forcerFaction) : codex.jeu, hasard);
     changer(r.etat); // sauvegardé tout de suite : recharger la page ne relance pas le tirage
     r.tirage.forEach((t) => { face(t.id, carte(t.id)); }); // dessinées pendant que le paquet se déchire
     if (sansAnimation()) return devoiler(zone, r.tirage);
@@ -304,13 +304,13 @@ function codexEcran(main) { galerie(main, 'codex'); }
 function galerie(main, mode) {
   const f = filtres[mode];
   const estCodex = mode === 'codex';
-  const source = () => estCodex ? [...codex.cartes, ...(f.exemples ? codex.exemples : [])] : codex.cartes.filter((e) => etat.collection[e.id]);
+  const source = () => estCodex ? [...codex.cartes, ...(f.exemples ? codex.exemples : [])] : codex.jeu.filter((e) => etat.collection[e.id]);
 
   if (estCodex) {
     main.append(entete('Codex', 'Le Codex',
-      `Toutes les cartes du monde d'Eraser : ${codex.cartes.length} cartes, et ${codex.exemples.length} cartes exemples qui montrent les raretés que chaque faction n'a pas encore.`));
+      `Toutes les cartes du monde d'Eraser : ${codex.cartes.length} cartes, et ${codex.exemples.length} cartes exemples qui tiennent la place des raretés qu'une faction n'a pas encore (elles tombent aussi dans les paquets).`));
   } else {
-    const pr = R.progression(etat, codex.cartes);
+    const pr = R.progression(etat, codex.jeu);
     const exemplaires = Object.values(etat.collection).reduce((a, b) => a + b, 0);
     main.append(entete('Collection', 'Ta collection', pr.possedees
       ? `${pluriel(pr.possedees, 'carte', 'cartes')} sur ${pr.total}` + (exemplaires > pr.possedees ? `, ${pluriel(exemplaires, 'exemplaire', 'exemplaires')} en tout.` : '.')
@@ -414,7 +414,7 @@ function combat(main) {
 
 /* ---------- profil ---------- */
 function chiffresProfil() {
-  const pr = R.progression(etat, codex.cartes);
+  const pr = R.progression(etat, codex.jeu);
   return h('div', { class: 'chiffres', id: 'chiffres' },
     h('div', { class: 'chiffre' }, h('b', {}, String(pr.possedees)), h('span', {}, 'cartes différentes')),
     h('div', { class: 'chiffre' }, h('b', {}, String(etat.paquets)), h('span', {}, etat.paquets > 1 ? 'paquets à ouvrir' : 'paquet à ouvrir')),
@@ -422,35 +422,11 @@ function chiffresProfil() {
     h('div', { class: 'chiffre' }, h('b', {}, String(etat.stats.cartesTirees)), h('span', {}, 'cartes tirées')));
 }
 function profil(main) {
-  const pr = R.progression(etat, codex.cartes);
+  const pr = R.progression(etat, codex.jeu);
   const depuis = new Date(etat.creeLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   main.append(entete('Profil', 'Ton profil', 'Joueur depuis le ' + depuis + '.'));
   const fiche = h('div', { class: 'fiche' });
   fiche.append(chiffresProfil());
-  fiche.append(h('p', { class: 'note' }, h('strong', {}, 'Comptes : bientôt. '),
-    'Pour l\'instant, ta collection est gardée dans ce navigateur, sur cet appareil. Pour la déplacer, enregistre-la ici puis recharge-la ailleurs.'));
-
-  const fichier = h('input', { type: 'file', accept: 'application/json,.json', hidden: true, onchange: async (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    try {
-      const brut = JSON.parse(await f.text());
-      if (!brut || typeof brut.collection !== 'object') throw new Error('pas une sauvegarde');
-      changer(R.normaliser(brut)); toast('Sauvegarde chargée'); afficher();
-    } catch (_) { toast('Ce fichier n\'est pas une sauvegarde d\'Eraser Arena.'); }
-  } });
-  let arme = false;
-  const raz = h('button', { class: 'btn danger', type: 'button', onclick: () => {
-    if (!arme) { arme = true; raz.textContent = 'Sûr ? Toute la collection sera perdue'; setTimeout(() => { arme = false; raz.textContent = 'Recommencer à zéro'; }, 4000); return; }
-    stockage.effacer(); changer(R.nouvelEtat()); toast('Nouvelle partie : trois paquets t\'attendent'); location.hash = '#accueil'; afficher();
-  } }, 'Recommencer à zéro');
-  fiche.append(h('div', { class: 'actions' },
-    h('button', { class: 'btn', type: 'button', onclick: () => {
-      const url = URL.createObjectURL(new Blob([JSON.stringify(etat, null, 1)], { type: 'application/json' }));
-      h('a', { href: url, download: 'eraser-arena-sauvegarde.json' }).click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } }, 'Enregistrer ma sauvegarde'),
-    h('button', { class: 'btn', type: 'button', onclick: () => fichier.click() }, 'Charger une sauvegarde'),
-    fichier, raz));
   fiche.append(h('p', {}, h('a', { href: '#codex' }, 'Le Codex'), ' montre toutes les cartes du jeu, même celles que tu n\'as pas.'));
   fiche.append(admin.actif ? panneauAdmin() : entreeAdmin());
   main.append(fiche);
@@ -504,11 +480,11 @@ function panneauAdmin() {
     // Paquets truqués : une rareté et/ou une faction.
     const selR = h('select', { 'aria-label': 'Rareté des prochains paquets', onchange: (e) => { admin.forcer = e.target.value; } },
       h('option', { value: '' }, 'Toutes raretés (vraies chances)'),
-      DE_HAUT_EN_BAS.filter((r) => codex.cartes.some((c) => c.rarity === r)).map((r) => h('option', { value: r }, 'Que des ' + RAR[r].label.toLowerCase() + 's')));
+      DE_HAUT_EN_BAS.filter((r) => codex.jeu.some((c) => c.rarity === r)).map((r) => h('option', { value: r }, 'Que des ' + RAR[r].label.toLowerCase() + 's')));
     selR.value = admin.forcer;
     const selF = h('select', { 'aria-label': 'Faction des prochains paquets', onchange: (e) => { admin.forcerFaction = e.target.value; } },
       h('option', { value: '' }, 'Toutes factions'),
-      [...codex.factions.values()].filter((f) => codex.cartes.some((c) => (c.factions || []).includes(f.id))).map((f) => h('option', { value: f.id }, 'Que des ' + f.nom.toLowerCase().replace(/^adepte/, 'adeptes'))));
+      [...codex.factions.values()].filter((f) => codex.jeu.some((c) => (c.factions || []).includes(f.id))).map((f) => h('option', { value: f.id }, 'Que des ' + f.nom.toLowerCase().replace(/^adepte/, 'adeptes'))));
     selF.value = admin.forcerFaction || '';
     const truques = h('div', { class: 'bloc-admin' },
       h('h3', {}, 'Prochains paquets'),
@@ -525,7 +501,7 @@ function panneauAdmin() {
     const liste = h('ul', { class: 'liste-admin' });
     const remplirListe = () => {
       const q = norm(recherche);
-      const toutes = codex.cartes.filter((e) => !q || norm([e.title, e.honor, legendeDe(e)].join(' ')).includes(q))
+      const toutes = codex.jeu.filter((e) => !q || norm([e.title, e.honor, legendeDe(e)].join(' ')).includes(q))
         .sort((a, b) => !!etat.collection[b.id] - !!etat.collection[a.id] || R.RANG[b.rarity] - R.RANG[a.rarity] || a.title.localeCompare(b.title, 'fr'));
       const montrees = q ? toutes : toutes.filter((e) => etat.collection[e.id]);
       const lignes = montrees.slice(0, 60).map((e) => {
@@ -553,15 +529,25 @@ function panneauAdmin() {
       h('h3', {}, 'Cartes'),
       h('p', {}, 'Sans recherche : tes cartes. Avec une recherche : toutes les cartes du jeu, pour en donner ou en retirer.'),
       h('div', { class: 'actions' },
-        bouton('Donner toutes les cartes', () => maj(R.donnerTout(etat, codex.cartes), 'Toutes les cartes sont à toi')),
+        bouton('Donner toutes les cartes', () => maj(R.donnerTout(etat, codex.jeu), 'Toutes les cartes sont à toi')),
         vider),
       champ, liste);
+
+    let armeRaz = false;
+    const raz = bouton('Recommencer à zéro', () => {
+      if (!armeRaz) { armeRaz = true; raz.textContent = 'Sûr ? Tout sera effacé'; setTimeout(() => { armeRaz = false; raz.textContent = 'Recommencer à zéro'; }, 4000); return; }
+      stockage.effacer(); changer(R.nouvelEtat()); toast('Nouvelle partie : trois paquets t\'attendent'); location.hash = '#accueil'; afficher();
+    }, 'btn danger');
+    const partie = h('div', { class: 'bloc-admin' },
+      h('h3', {}, 'Partie'),
+      h('p', {}, 'Tout effacer comme au premier lancement : collection, paquets, statistiques, et les 3 paquets de bienvenue.'),
+      h('div', { class: 'actions' }, raz));
 
     panneau.replaceChildren(
       h('div', { class: 'tete-admin' }, h('h2', {}, 'Mode admin'),
         bouton('Quitter le mode admin', () => { quitterAdmin(); toast('Mode admin quitté'); afficher(); }, 'btn discret')),
       h('p', {}, 'Pour tester tout le jeu. Il ne s\'active que sur ce navigateur, avec le code.'),
-      paquets, truques, cartes);
+      paquets, truques, cartes, partie);
     if (rechercheFocus) champ.focus();
   }
   dessiner();
