@@ -193,3 +193,11 @@ test('attaque et vie : toutes les cartes en ont, dans les bornes', () => {
   const er = reserveJeu.find((c) => c.title === 'Eraserias');
   assert.deepEqual([er.attack, er.life], [0, 20]);
 });
+
+test('cartes exemples : une valeur par rareté, pareille pour toutes les factions', () => {
+  const attendu = { trescommune: [1, 1], commune: [2, 3], rare: [4, 4], superrare: [5, 6], epique: [7, 7], legendaire: [10, 10] };
+  for (const c of reserveJeu.filter((x) => x.exemple)) assert.deepEqual([c.attack, c.life], attendu[c.rarity], c.id);
+  const sarar = reserveJeu.find((c) => c.title === 'Sarar');
+  assert.deepEqual([sarar.attack, sarar.life], [5, 1]);
+  assert.match(sarar.ability, /^Passif/);
+});

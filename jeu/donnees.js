@@ -30,16 +30,13 @@ export async function chargerCodex(base = '') {
 // elles tombent dans les paquets comme les autres, et vont dans la collection.
 // Dès qu'une vraie carte prend la place, l'exemple disparaît tout seul.
 export const RARETES_EXEMPLES = ['legendaire', 'epique', 'superrare', 'rare', 'commune', 'trescommune'];
-// Attaque et vie des cartes exemples, pour pouvoir jouer avec en attendant les vraies.
-// Une base par rareté, puis une légère tendance par faction : sang et feu frappent plus fort,
-// océans et nature encaissent mieux ; les autres restent équilibrées.
+// Attaque et vie des cartes exemples, pour pouvoir jouer avec en attendant les vraies : une valeur par rareté.
 export const STATS_EXEMPLES = {
-  trescommune: [1, 2], commune: [2, 3], rare: [4, 4], superrare: [5, 6], epique: [7, 7], legendaire: [9, 10],
+  trescommune: [1, 1], commune: [2, 3], rare: [4, 4], superrare: [5, 6], epique: [7, 7], legendaire: [10, 10],
 };
-export const TENDANCE_EXEMPLES = { sang: [1, -1], feu: [1, -1], oceans: [-1, 1], nature: [-1, 1] };
 export function statsExemple(faction, rarete) {
-  const [a, v] = STATS_EXEMPLES[rarete], [da, dv] = TENDANCE_EXEMPLES[faction] || [0, 0];
-  return { attack: Math.max(0, a + da), life: Math.max(1, v + dv) };
+  const [attack, life] = STATS_EXEMPLES[rarete];
+  return { attack, life };
 }
 export function cartesExemples(factions, cartes) {
   const prises = new Set(cartes.flatMap((c) => (c.factions || []).map((f) => f + '|' + c.rarity)));
