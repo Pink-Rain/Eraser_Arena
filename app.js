@@ -1,6 +1,6 @@
 // Eraser Arena — l'appli : menu, accueil, ouverture de paquets, collection, profil.
 // Les règles vivent dans jeu/regles.js, la sauvegarde dans jeu/stockage.js ; ce fichier ne fait que l'écran.
-import { chargerCodex, carteDe, enfants, descendance } from './jeu/donnees.js';
+import { chargerCodex, carteDe, enfants, descendance, typeCourt } from './jeu/donnees.js';
 import * as R from './jeu/regles.js';
 import { stockageLocal as stockage } from './jeu/stockage.js';
 import { face, revers, dos, prechauffer } from './jeu/rendu.js';
@@ -36,7 +36,27 @@ function toast(msg) {
 /* ---------- état ---------- */
 let codex = null;
 let etat = null;
-const carte = (id) => carteDe(codex.tags, codex.parId.get(id));
+
+// Mode admin : pour tester (ajouter des paquets, tout voir, truquer un paquet).
+// On l'active en ouvrant la page avec ?admin à la fin de l'adresse ; on le quitte depuis le profil (ou avec ?admin=0).
+// Il est retenu par ce navigateur seulement.
+const CLE_ADMIN = 'eraser-arena:admin';
+const admin = { actif: false, voirTout: false, forcer: '' };
+{
+  const q = new URLSearchParams(location.search);
+  let demande = null;
+  if (q.has('admin')) { demande = q.get('admin') !== '0'; history.replaceState(null, '', location.pathname + location.hash); }
+  try {
+    if (demande === true) localStorage.setItem(CLE_ADMIN, '1');
+    if (demande === false) localStorage.removeItem(CLE_ADMIN);
+    admin.actif = localStorage.getItem(CLE_ADMIN) === '1';
+  } catch (_) { admin.actif = demande === true; }
+}
+function quitterAdmin() {
+  admin.actif = false; admin.voirTout = false; admin.forcer = '';
+  try { localStorage.removeItem(CLE_ADMIN); } catch (_) {}
+}
+const carte = (id) => carteDe(codex, codex.parId.get(id));
 
 function changer(nouvel) {
   etat = nouvel;
@@ -47,6 +67,7 @@ function changer(nouvel) {
 function majMenu() {
   const p = $('pastillePaquets');
   p.hidden = !etat.paquets; p.textContent = etat.paquets;
+  $('chipAdmin').hidden = !admin.actif;
   const nom = ecranCourant();
   for (const a of document.querySelectorAll('.onglet')) {
     if (a.dataset.ecran === nom) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
@@ -198,7 +219,7 @@ function scelle(zone) {
   let parti = false;
   const p = paquetVisuel({ 'aria-label': 'Ouvrir le paquet', onclick: () => {
     if (parti) return; parti = true;
-    const r = R.ouvrirPaquet(etat, codex.cartes, hasard);
+    const r = R.ouvrirPaquet(etat, R.reserveForcee(codex.cartes, admin.actif ? admin.forcer : ''), hasard);
     changer(r.etat); // sauvegardé tout de suite : recharger la page ne relance pas le tirage
     r.tirage.forEach((t) => { face(t.id, carte(t.id)); }); // dessinées pendant que le paquet se déchire
     if (sansAnimation()) return devoiler(zone, r.tirage);
@@ -209,6 +230,7 @@ function scelle(zone) {
     p,
     h('p', { class: 'consigne' }, 'Touche le paquet pour l\'ouvrir'),
     h('p', { class: 'stock' }, etat.paquets > 1 ? `Encore ${etat.paquets - 1} après celui-ci` : 'C\'est ton dernier paquet'),
+    admin.actif && admin.forcer ? h('p', { class: 'pastille-admin' }, 'Admin : paquet truqué, que des cartes ' + RAR[admin.forcer].label.toLowerCase()) : null,
     tableChances()));
 }
 
@@ -264,71 +286,99 @@ function retourner(el, t, c) {
 }
 
 /* ---------- collection ---------- */
-const filtre = { rarete: '', faction: '', miennes: false };
+const filtre = { tri: 'rarete', rarete: '', faction: '', type: '', miennes: false };
+const SANS = '_sans';
+const ordreFactions = () => [...codex.factions.keys()];
+function legendeDe(e) {
+  const f = (e.factions || []).map((id) => codex.factions.get(id).court).join(' · ');
+  return (f ? f + ' — ' : '') + typeCourt(codex, e);
+}
 function collection(main) {
   const pr = R.progression(etat, codex.cartes);
   const exemplaires = Object.values(etat.collection).reduce((a, b) => a + b, 0);
   main.append(entete('Collection', 'Ta collection',
     `${pr.possedees} cartes sur ${pr.total}` + (exemplaires > pr.possedees ? `, ${pluriel(exemplaires, 'exemplaire', 'exemplaires')} en tout.` : '.')));
 
-  const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Rareté' });
+  const segment = (etiquette, options, cle, apres) => {
+    const seg = h('div', { class: 'seg', role: 'group', 'aria-label': etiquette });
+    const dessiner = () => seg.replaceChildren(...options.map(([v, label, c]) => h('button', {
+      type: 'button', 'aria-pressed': filtre[cle] === v ? 'true' : 'false',
+      onclick: () => { filtre[cle] = v; dessiner(); (apres || dessinerGrille)(); },
+    }, c ? h('span', { class: 'pt', style: '--c:' + c }) : null, label)));
+    dessiner();
+    return seg;
+  };
   const presentes = DE_HAUT_EN_BAS.filter((r) => pr.parRarete[r]);
-  const dessinerSeg = () => seg.replaceChildren(...['', ...presentes].map((r) => h('button', {
-    type: 'button', 'aria-pressed': filtre.rarete === r ? 'true' : 'false',
-    onclick: () => { filtre.rarete = r; dessinerSeg(); dessinerGrille(); },
-  }, r ? h('span', { class: 'pt', style: '--c:' + RAR[r].c }) : null, r ? RAR[r].label : 'Toutes')));
-  dessinerSeg();
+  const segTri = segment('Trier par', [['rarete', 'Par rareté'], ['faction', 'Par faction']], 'tri');
+  const segRar = segment('Rareté', [['', 'Toutes'], ...presentes.map((r) => [r, RAR[r].label, RAR[r].c])], 'rarete');
 
-  const sel = h('select', { 'aria-label': 'Faction', onchange: (e) => { filtre.faction = e.target.value; dessinerGrille(); } }, h('option', { value: '' }, 'Toutes les factions'));
+  const selFac = h('select', { 'aria-label': 'Faction', onchange: (e) => { filtre.faction = e.target.value; dessinerGrille(); } },
+    h('option', { value: '' }, 'Toutes les factions'),
+    ordreFactions().map((id) => h('option', { value: id }, codex.factions.get(id).nom)),
+    codex.cartes.some((e) => !e.factions) ? h('option', { value: SANS }, 'Sans faction (à répartir)') : null);
+  selFac.value = filtre.faction;
+  const selType = h('select', { 'aria-label': 'Type', onchange: (e) => { filtre.type = e.target.value; dessinerGrille(); } }, h('option', { value: '' }, 'Tous les types'));
   const parcourir = (parent, prof) => {
     for (const t of enfants(codex.tags, parent)) {
       const set = descendance(codex.tags, t.id);
-      const n = codex.cartes.filter((e) => (e.tagIds || []).some((x) => set.has(x))).length;
-      if (n) sel.append(h('option', { value: t.id }, '   '.repeat(prof) + t.name));
+      if (codex.cartes.some((e) => (e.tagIds || []).some((x) => set.has(x)))) selType.append(h('option', { value: t.id }, '   '.repeat(prof) + t.name));
       parcourir(t.id, prof + 1);
     }
   };
   parcourir(null, 0);
-  sel.value = filtre.faction;
+  selType.value = filtre.type;
   const coche = h('input', { type: 'checkbox', onchange: (e) => { filtre.miennes = e.target.checked; dessinerGrille(); } });
   coche.checked = filtre.miennes;
-  main.append(h('div', { class: 'filtres' }, sel, seg, h('label', { class: 'case' }, coche, 'Seulement les miennes')));
+  main.append(h('div', { class: 'filtres' }, segTri, segRar),
+    h('div', { class: 'filtres' }, selFac, selType, h('label', { class: 'case' }, coche, 'Seulement les miennes'),
+      admin.actif && admin.voirTout ? h('span', { class: 'pastille-admin' }, 'Admin : tout est visible') : null));
 
   const zone = h('div');
   main.append(zone);
+  function cellule(e, liste) {
+    const n = etat.collection[e.id] || 0;
+    const rc = RAR[e.rarity].c;
+    if (n || (admin.actif && admin.voirTout)) {
+      return h('div', { class: 'cellule' + (n ? '' : ' fantome') },
+        vignette(e.id, liste, n > 1 ? h('span', { class: 'nombre', 'aria-label': n + ' exemplaires' }, '×' + n) : null),
+        h('span', { class: 'legende' }, legendeDe(e)));
+    }
+    return h('div', { class: 'cellule' },
+      h('div', { class: 'vignette manquante', style: '--c:' + rc, role: 'img', 'aria-label': 'Carte ' + RAR[e.rarity].label.toLowerCase() + ' pas encore tirée' },
+        h('span', { class: 'q', 'aria-hidden': 'true' }, '?'), h('small', {}, 'Pas encore tirée')),
+      h('span', { class: 'legende' }, ' '));
+  }
   function dessinerGrille() {
-    const set = filtre.faction ? descendance(codex.tags, filtre.faction) : null;
+    const tset = filtre.type ? descendance(codex.tags, filtre.type) : null;
     const liste = codex.cartes.filter((e) => (!filtre.rarete || e.rarity === filtre.rarete)
-      && (!set || (e.tagIds || []).some((x) => set.has(x)))
-      && (!filtre.miennes || etat.collection[e.id]));
-    const visibles = liste.filter((e) => etat.collection[e.id]).map((e) => e.id);
+      && (!tset || (e.tagIds || []).some((x) => tset.has(x)))
+      && (!filtre.faction || (filtre.faction === SANS ? !e.factions : (e.factions || []).includes(filtre.faction)))
+      && (!filtre.miennes || etat.collection[e.id]))
+      .sort((a, b) => R.RANG[b.rarity] - R.RANG[a.rarity] || a.title.localeCompare(b.title, 'fr'));
+    const visibles = liste.filter((e) => etat.collection[e.id] || (admin.actif && admin.voirTout)).map((e) => e.id);
     zone.replaceChildren();
     if (!liste.length) { zone.append(h('p', { class: 'vide' }, filtre.miennes && !pr.possedees ? 'Tu n\'as encore aucune carte. Va ouvrir un paquet !' : 'Aucune carte ne correspond.')); return; }
-    for (const r of DE_HAUT_EN_BAS) {
-      const dans = liste.filter((e) => e.rarity === r);
-      if (!dans.length) continue;
-      const a = dans.filter((e) => etat.collection[e.id]).length;
-      const grille = h('div', { class: 'grille' });
-      for (const e of dans) {
-        const n = etat.collection[e.id] || 0;
-        if (n) {
-          const c = carte(e.id);
-          grille.append(h('div', { class: 'cellule' },
-            vignette(e.id, visibles, n > 1 ? h('span', { class: 'nombre', 'aria-label': n + ' exemplaires' }, '×' + n) : null),
-            h('span', { class: 'legende' }, c.faction.short + (c.faction2 ? ' · ' + c.faction2.short : ''))));
-        } else {
-          grille.append(h('div', { class: 'cellule' },
-            h('div', { class: 'vignette manquante', style: '--c:' + RAR[r].c, role: 'img', 'aria-label': 'Carte ' + RAR[r].label.toLowerCase() + ' pas encore tirée' },
-              h('span', { class: 'q', 'aria-hidden': 'true' }, '?'), h('small', {}, 'Pas encore tirée')),
-            h('span', { class: 'legende' }, ' ')));
-        }
-      }
-      zone.append(h('section', { class: 'groupe', 'aria-label': RAR[r].label },
-        h('div', { class: 'groupe-tete', style: '--c:' + RAR[r].c }, h('h2', {}, RAR[r].label), h('span', {}, a + ' / ' + dans.length)),
-        grille));
+    // Les groupes : une rareté, ou une faction (une carte bicolore est dans ses deux factions).
+    const groupes = filtre.tri === 'faction'
+      ? [...ordreFactions().map((id) => { const f = codex.factions.get(id); return { titre: f.nom, c: f.couleur, logo: f.logo, cartes: liste.filter((e) => (e.factions || []).includes(id)) }; }),
+         { titre: 'Sans faction (à répartir)', c: 'var(--bone-faint)', cartes: liste.filter((e) => !e.factions) }]
+      : DE_HAUT_EN_BAS.map((r) => ({ titre: RAR[r].label, c: RAR[r].c, cartes: liste.filter((e) => e.rarity === r) }));
+    for (const g of groupes) {
+      if (!g.cartes.length) continue;
+      const a = g.cartes.filter((e) => etat.collection[e.id]).length;
+      zone.append(h('section', { class: 'groupe', 'aria-label': g.titre },
+        h('div', { class: 'groupe-tete', style: '--c:' + g.c }, g.logo ? logoFaction(g.logo, g.c) : null, h('h2', {}, g.titre), h('span', {}, a + ' / ' + g.cartes.length)),
+        h('div', { class: 'grille' }, g.cartes.map((e) => cellule(e, visibles)))));
     }
   }
   dessinerGrille();
+}
+// Le logo d'une faction, en petit, devant le titre de son groupe.
+function logoFaction(logo, couleur) {
+  const c = document.createElement('canvas'); c.width = c.height = 72; c.className = 'logo-faction';
+  c.style.setProperty('--c', couleur); c.setAttribute('aria-hidden', 'true');
+  window.Logos.draw(c.getContext('2d'), logo, 36, 36, 56, [[0, '#fff0bd'], [0.5, '#e3ad48'], [1, '#c88a2a']]);
+  return c;
 }
 
 /* ---------- combat (à venir) ---------- */
@@ -375,7 +425,42 @@ function profil(main) {
     h('button', { class: 'btn', type: 'button', onclick: () => fichier.click() }, 'Charger une sauvegarde'),
     fichier, raz));
   fiche.append(h('p', {}, h('a', { href: 'codex.html' }, 'Le Codex'), ' montre toutes les cartes du jeu, même celles que tu n\'as pas.'));
+  if (admin.actif) fiche.append(panneauAdmin());
   main.append(fiche);
+}
+
+function panneauAdmin() {
+  const faire = (fn, msg) => () => { changer(fn(etat)); if (msg) toast(msg); afficher(); };
+  const bouton = (label, onclick, cls = 'btn') => h('button', { class: cls, type: 'button', onclick }, label);
+  const voir = h('input', { type: 'checkbox', onchange: (e) => { admin.voirTout = e.target.checked; } });
+  voir.checked = admin.voirTout;
+  const forcer = h('select', { 'aria-label': 'Prochains paquets', onchange: (e) => { admin.forcer = e.target.value; } },
+    h('option', { value: '' }, 'Normaux (vraies chances)'),
+    DE_HAUT_EN_BAS.filter((r) => codex.cartes.some((c) => c.rarity === r)).map((r) => h('option', { value: r }, 'Que des ' + RAR[r].label.toLowerCase() + 's')));
+  forcer.value = admin.forcer;
+  let arme = false;
+  const vider = bouton('Vider la collection', () => {
+    if (!arme) { arme = true; vider.textContent = 'Sûr ? Clique encore'; setTimeout(() => { arme = false; vider.textContent = 'Vider la collection'; }, 4000); return; }
+    faire(R.viderCollection, 'Collection vidée')();
+  }, 'btn danger');
+  const sansFaction = codex.cartes.filter((c) => !c.factions).length;
+  return h('section', { class: 'admin', 'aria-label': 'Mode admin' },
+    h('h2', {}, 'Mode admin'),
+    h('p', {}, 'Pour tester. Il n\'existe que sur ce navigateur ; tes amis ne le voient pas.'),
+    h('div', { class: 'ligne-admin' }, h('span', {}, 'Paquets'),
+      h('div', { class: 'actions' },
+        bouton('+1', faire((e) => R.ajouterPaquets(e, 1), '+1 paquet')),
+        bouton('+5', faire((e) => R.ajouterPaquets(e, 5), '+5 paquets')),
+        bouton('+10', faire((e) => R.ajouterPaquets(e, 10), '+10 paquets')),
+        bouton('Remettre le paquet du jour', faire(R.remettrePaquetDuJour, 'Le paquet du jour est de nouveau disponible')))),
+    h('div', { class: 'ligne-admin' }, h('span', {}, 'Prochains paquets'), forcer),
+    h('div', { class: 'ligne-admin' }, h('span', {}, 'Collection'),
+      h('div', { class: 'actions' },
+        bouton('Donner toutes les cartes', faire((e) => R.donnerTout(e, codex.cartes), 'Toutes les cartes sont à toi')),
+        vider)),
+    h('label', { class: 'case' }, voir, 'Voir toutes les cartes dans la collection, même celles que je n\'ai pas'),
+    h('p', { class: 'stock' }, sansFaction ? `${sansFaction} cartes sur ${codex.cartes.length} n'ont pas encore de faction.` : 'Toutes les cartes ont une faction.'),
+    h('div', { class: 'actions' }, bouton('Quitter le mode admin', () => { quitterAdmin(); toast('Mode admin quitté'); afficher(); }, 'btn discret')));
 }
 
 /* ---------- carte en grand ---------- */

@@ -154,3 +154,17 @@ export function dernieresCartes(etat, n = 10) {
   }
   return out;
 }
+
+/* ---------- mode admin (pour tester) ---------- */
+
+export const ajouterPaquets = (etat, n) => ({ ...etat, paquets: Math.max(0, etat.paquets + n) });
+export const remettrePaquetDuJour = (etat) => ({ ...etat, dernierPaquetDuJour: null });
+// Au moins un exemplaire de chaque carte de la réserve.
+export function donnerTout(etat, reserve) {
+  const collection = { ...etat.collection };
+  for (const c of reserve) collection[c.id] = Math.max(1, collection[c.id] || 0);
+  return { ...etat, collection };
+}
+export const viderCollection = (etat) => ({ ...etat, collection: {}, historique: [] });
+// La réserve d'un paquet truqué : seulement une rareté (pour voir ses effets à l'ouverture).
+export const reserveForcee = (reserve, rarete) => (rarete ? reserve.filter((c) => c.rarity === rarete) : reserve);

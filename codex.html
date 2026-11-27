@@ -122,8 +122,8 @@ dialog::backdrop { background: rgba(6,5,8,.9); }
   <div class="bar" role="search">
     <label class="sr" for="q">Chercher une carte</label>
     <input id="q" type="search" placeholder="Chercher un nom, un titre…" autocomplete="off">
-    <label class="sr" for="faction">Faction</label>
-    <select id="faction"><option value="">Toutes les factions</option></select>
+    <label class="sr" for="faction">Type</label>
+    <select id="faction"><option value="">Tous les types</option></select>
     <div class="seg" id="rarSeg" role="group" aria-label="Rareté"></div>
     <span class="count" id="count" aria-live="polite"></span>
     <button class="reset" id="reset" type="button" hidden>Tout montrer</button>
@@ -156,7 +156,7 @@ dialog::backdrop { background: rgba(6,5,8,.9); }
 <script src="atelier/carte/silhouettes.js"></script>
 <script src="atelier/carte/cadre.js"></script>
 <script type="module">
-import { carteDe } from './jeu/donnees.js';
+import { carteDe, chargerCodex, typeCourt } from './jeu/donnees.js';
 (() => {
   const $ = (id) => document.getElementById(id);
   const h = (tag, attrs = {}, ...kids) => {
@@ -177,7 +177,7 @@ import { carteDe } from './jeu/donnees.js';
   const S = { tags: new Map(), entries: [], q: '', faction: '', rarity: '', shown: [], viewing: -1 };
 
   // ---------- fiches → cartes (même règle que le jeu) ----------
-  const cardOf = (e) => carteDe(S.tags, e);
+  const cardOf = (e) => carteDe(S.cx, e);
 
   // ---------- arbre des factions ----------
   const childrenOf = (id) => [...S.tags.values()].filter((t) => (t.parentId || null) === id).sort((a, b) => (a.order || 0) - (b.order || 0) || a.name.localeCompare(b.name, 'fr'));
@@ -249,7 +249,7 @@ import { carteDe } from './jeu/donnees.js';
           onclick: () => openAt(idx),
         });
         btn._card = card;
-        const where = card.faction.short + (card.faction2 ? ' · ' + card.faction2.short : '');
+        const where = (e.factions ? e.factions.map((id) => S.cx.factions.get(id).court).join(' · ') + ' — ' : '') + typeCourt(S.cx, e);
         grid.append(h('div', { class: 'cell' }, btn, h('span', { class: 'cap' }, where)));
         if (io) io.observe(btn); else paint(btn);
       }
@@ -298,16 +298,15 @@ import { carteDe } from './jeu/donnees.js';
   // ---------- chargement ----------
   (async () => {
     try {
-      const res = await fetch('data/codex.json', { cache: 'no-cache' });
-      if (!res.ok) throw new Error(res.status);
-      const data = await res.json();
-      for (const t of data.tags) S.tags.set(t.id, t);
-      S.entries = data.entries.filter((e) => e.kind !== 'note');
+      S.cx = await chargerCodex();
+      const data = { exportedAt: S.cx.exporteLe };
+      S.tags = S.cx.tags;
+      S.entries = S.cx.cartes;
       try {
         await Promise.all(['700 26px "Cinzel"', '600 15px "Cinzel"', '500 19px "Alegreya Sans"', '600 15px "Alegreya Sans"', 'italic 17px "Alegreya"']
           .map((f) => document.fonts.load(f)));
       } catch (_) {}
-      const factions = new Set(S.entries.flatMap((e) => e.tagIds || [])).size;
+      const factions = S.cx.factions.size;
       $('facts').replaceChildren(
         h('span', {}, h('b', {}, String(S.entries.length)), ' cartes'),
         h('span', {}, h('b', {}, String(factions)), ' factions'),
