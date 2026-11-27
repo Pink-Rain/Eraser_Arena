@@ -221,7 +221,13 @@ function scelle(zone) {
   let parti = false;
   const p = paquetVisuel({ 'aria-label': 'Ouvrir le paquet', onclick: () => {
     if (parti) return; parti = true;
-    const r = R.ouvrirPaquet(etat, admin.actif ? R.reserveForcee(codex.jeu, admin.forcer, admin.forcerFaction) : codex.jeu, hasard);
+    let r;
+    if (admin.actif && admin.forcer === 'echantillon') {
+      const reserve = R.reserveForcee(codex.jeu, '', admin.forcerFaction);
+      r = R.ouvrirPaquet(etat, reserve, hasard, new Date(), R.tirerEchantillon(reserve, hasard));
+    } else {
+      r = R.ouvrirPaquet(etat, admin.actif ? R.reserveForcee(codex.jeu, admin.forcer, admin.forcerFaction) : codex.jeu, hasard);
+    }
     changer(r.etat); // sauvegardé tout de suite : recharger la page ne relance pas le tirage
     r.tirage.forEach((t) => { face(t.id, carte(t.id)); }); // dessinées pendant que le paquet se déchire
     sonDechirure();
@@ -234,7 +240,7 @@ function scelle(zone) {
     h('p', { class: 'consigne' }, 'Touche le paquet pour l\'ouvrir'),
     h('p', { class: 'stock' }, etat.paquets > 1 ? `Encore ${etat.paquets - 1} après celui-ci` : 'C\'est ton dernier paquet'),
     admin.actif && (admin.forcer || admin.forcerFaction) ? h('p', { class: 'pastille-admin' }, 'Admin : paquet truqué — '
-      + [admin.forcer && RAR[admin.forcer].label.toLowerCase(), admin.forcerFaction && codex.factions.get(admin.forcerFaction).nom].filter(Boolean).join(', ')) : null,
+      + [admin.forcer && (admin.forcer === 'echantillon' ? 'une carte de chaque rareté' : 'uniquement ' + RAR[admin.forcer].label.toLowerCase()), admin.forcerFaction && codex.factions.get(admin.forcerFaction).nom].filter(Boolean).join(', ')) : null,
     tableChances(),
     boutonSon()));
 }
@@ -537,8 +543,9 @@ function panneauAdmin() {
 
     // Paquets truqués : une rareté et/ou une faction.
     const selR = h('select', { 'aria-label': 'Rareté des prochains paquets', onchange: (e) => { admin.forcer = e.target.value; } },
-      h('option', { value: '' }, 'Toutes raretés (vraies chances)'),
-      DE_HAUT_EN_BAS.filter((r) => codex.jeu.some((c) => c.rarity === r)).map((r) => h('option', { value: r }, 'Que des ' + RAR[r].label.toLowerCase() + 's')));
+      h('option', { value: '' }, 'Paquet normal (vraies chances)'),
+      h('option', { value: 'echantillon' }, 'Une de chaque : commune, rare, super rare, épique, légendaire'),
+      DE_HAUT_EN_BAS.filter((r) => codex.jeu.some((c) => c.rarity === r)).map((r) => h('option', { value: r }, 'Paquet uniquement ' + RAR[r].label.toLowerCase())));
     selR.value = admin.forcer;
     const selF = h('select', { 'aria-label': 'Faction des prochains paquets', onchange: (e) => { admin.forcerFaction = e.target.value; } },
       h('option', { value: '' }, 'Toutes factions'),

@@ -27,7 +27,8 @@ Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront e
   les comptes en ligne viendront la remplacer.
 - **Mode admin** (pour tester tout le jeu) : en bas du profil, « Mode admin », puis le code.
   Paquets à volonté (un nombre libre à ajouter, retirer ou fixer), paquet du jour remis, prochains paquets
-  truqués par rareté et/ou par faction, toutes les cartes d'un coup, collection vidée, et chaque carte
+  truqués (uniquement une rareté, ou une carte de chaque : commune, rare, super rare, épique,
+  légendaire), éventuellement d'une seule faction, toutes les cartes d'un coup, collection vidée, et chaque carte
   ajoutée ou retirée une par une. Il reste actif sur ce navigateur jusqu'à « Quitter le mode admin ».
 
 ## Factions et types
