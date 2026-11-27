@@ -37,11 +37,11 @@ function toast(msg) {
 let codex = null;
 let etat = null;
 
-// Mode admin : pour tester (ajouter des paquets, tout voir, truquer un paquet).
-// On l'active en ouvrant la page avec ?admin à la fin de l'adresse ; on le quitte depuis le profil (ou avec ?admin=0).
+// Mode admin : pour tester tout le jeu (paquets à volonté, cartes une par une, paquets truqués).
+// On l'active en bas du profil avec le code (ou en ouvrant la page avec ?admin) ; on le quitte depuis le profil.
 // Il est retenu par ce navigateur seulement.
 const CLE_ADMIN = 'eraser-arena:admin';
-const admin = { actif: false, forcer: '' };
+const admin = { actif: false, forcer: '', forcerFaction: '' };
 {
   const q = new URLSearchParams(location.search);
   let demande = null;
@@ -53,7 +53,7 @@ const admin = { actif: false, forcer: '' };
   } catch (_) { admin.actif = demande === true; }
 }
 function quitterAdmin() {
-  admin.actif = false; admin.forcer = '';
+  admin.actif = false; admin.forcer = ''; admin.forcerFaction = '';
   try { localStorage.removeItem(CLE_ADMIN); } catch (_) {}
 }
 const carte = (id) => carteDe(codex, codex.parId.get(id));
@@ -62,6 +62,7 @@ function changer(nouvel) {
   etat = nouvel;
   if (!stockage.sauver(etat)) toast('Le navigateur refuse de garder la sauvegarde.');
   majMenu();
+  const ch = $('chiffres'); if (ch) ch.replaceWith(chiffresProfil());
 }
 
 function majMenu() {
@@ -219,7 +220,7 @@ function scelle(zone) {
   let parti = false;
   const p = paquetVisuel({ 'aria-label': 'Ouvrir le paquet', onclick: () => {
     if (parti) return; parti = true;
-    const r = R.ouvrirPaquet(etat, R.reserveForcee(codex.cartes, admin.actif ? admin.forcer : ''), hasard);
+    const r = R.ouvrirPaquet(etat, admin.actif ? R.reserveForcee(codex.cartes, admin.forcer, admin.forcerFaction) : codex.cartes, hasard);
     changer(r.etat); // sauvegardé tout de suite : recharger la page ne relance pas le tirage
     r.tirage.forEach((t) => { face(t.id, carte(t.id)); }); // dessinées pendant que le paquet se déchire
     if (sansAnimation()) return devoiler(zone, r.tirage);
@@ -230,7 +231,8 @@ function scelle(zone) {
     p,
     h('p', { class: 'consigne' }, 'Touche le paquet pour l\'ouvrir'),
     h('p', { class: 'stock' }, etat.paquets > 1 ? `Encore ${etat.paquets - 1} après celui-ci` : 'C\'est ton dernier paquet'),
-    admin.actif && admin.forcer ? h('p', { class: 'pastille-admin' }, 'Admin : paquet truqué, que des cartes ' + RAR[admin.forcer].label.toLowerCase()) : null,
+    admin.actif && (admin.forcer || admin.forcerFaction) ? h('p', { class: 'pastille-admin' }, 'Admin : paquet truqué — '
+      + [admin.forcer && RAR[admin.forcer].label.toLowerCase(), admin.forcerFaction && codex.factions.get(admin.forcerFaction).nom].filter(Boolean).join(', ')) : null,
     tableChances()));
 }
 
@@ -411,15 +413,20 @@ function combat(main) {
 }
 
 /* ---------- profil ---------- */
+function chiffresProfil() {
+  const pr = R.progression(etat, codex.cartes);
+  return h('div', { class: 'chiffres', id: 'chiffres' },
+    h('div', { class: 'chiffre' }, h('b', {}, String(pr.possedees)), h('span', {}, 'cartes différentes')),
+    h('div', { class: 'chiffre' }, h('b', {}, String(etat.paquets)), h('span', {}, etat.paquets > 1 ? 'paquets à ouvrir' : 'paquet à ouvrir')),
+    h('div', { class: 'chiffre' }, h('b', {}, String(etat.stats.paquetsOuverts)), h('span', {}, 'paquets ouverts')),
+    h('div', { class: 'chiffre' }, h('b', {}, String(etat.stats.cartesTirees)), h('span', {}, 'cartes tirées')));
+}
 function profil(main) {
   const pr = R.progression(etat, codex.cartes);
   const depuis = new Date(etat.creeLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   main.append(entete('Profil', 'Ton profil', 'Joueur depuis le ' + depuis + '.'));
   const fiche = h('div', { class: 'fiche' });
-  fiche.append(h('div', { class: 'chiffres' },
-    h('div', { class: 'chiffre' }, h('b', {}, String(pr.possedees)), h('span', {}, 'cartes différentes')),
-    h('div', { class: 'chiffre' }, h('b', {}, String(etat.stats.paquetsOuverts)), h('span', {}, 'paquets ouverts')),
-    h('div', { class: 'chiffre' }, h('b', {}, String(etat.stats.cartesTirees)), h('span', {}, 'cartes tirées'))));
+  fiche.append(chiffresProfil());
   fiche.append(h('p', { class: 'note' }, h('strong', {}, 'Comptes : bientôt. '),
     'Pour l\'instant, ta collection est gardée dans ce navigateur, sur cet appareil. Pour la déplacer, enregistre-la ici puis recharge-la ailleurs.'));
 
@@ -445,37 +452,120 @@ function profil(main) {
     h('button', { class: 'btn', type: 'button', onclick: () => fichier.click() }, 'Charger une sauvegarde'),
     fichier, raz));
   fiche.append(h('p', {}, h('a', { href: '#codex' }, 'Le Codex'), ' montre toutes les cartes du jeu, même celles que tu n\'as pas.'));
-  if (admin.actif) fiche.append(panneauAdmin());
+  fiche.append(admin.actif ? panneauAdmin() : entreeAdmin());
   main.append(fiche);
 }
 
+// L'entrée du mode admin, en bas du profil : un code, pour que les amis n'y touchent pas.
+// Le code n'est pas écrit en clair ici, seulement son empreinte (pour le changer, il faut recalculer l'empreinte).
+const EMPREINTE_ADMIN = 'afcc8e19';
+const empreinte = (s) => { let x = 0x811c9dc5; for (const ch of s) { x ^= ch.codePointAt(0); x = Math.imul(x, 0x01000193) >>> 0; } return x.toString(16); };
+function entreeAdmin() {
+  const champ = h('input', { type: 'password', placeholder: 'Code admin', 'aria-label': 'Code admin', autocomplete: 'off' });
+  const form = h('form', { class: 'entree-admin', hidden: true, onsubmit: (e) => {
+    e.preventDefault();
+    if (empreinte(norm(champ.value.trim())) !== EMPREINTE_ADMIN) { toast('Code incorrect'); champ.select(); return; }
+    admin.actif = true;
+    try { localStorage.setItem(CLE_ADMIN, '1'); } catch (_) {}
+    toast('Mode admin activé'); afficher();
+  } }, champ, h('button', { class: 'btn', type: 'submit' }, 'Entrer'));
+  const lien = h('button', { class: 'lien-admin', type: 'button', onclick: () => { lien.hidden = true; form.hidden = false; champ.focus(); } }, 'Mode admin');
+  return h('div', {}, lien, form);
+}
+
+// Le panneau admin : tester tout le jeu (paquets, cartes, paquets truqués…).
 function panneauAdmin() {
-  const faire = (fn, msg) => () => { changer(fn(etat)); if (msg) toast(msg); afficher(); };
+  const panneau = h('section', { class: 'admin', 'aria-label': 'Mode admin' });
+  const maj = (nouvel, msg) => { changer(nouvel); if (msg) toast(msg); dessiner(); };
   const bouton = (label, onclick, cls = 'btn') => h('button', { class: cls, type: 'button', onclick }, label);
-  const forcer = h('select', { 'aria-label': 'Prochains paquets', onchange: (e) => { admin.forcer = e.target.value; } },
-    h('option', { value: '' }, 'Normaux (vraies chances)'),
-    DE_HAUT_EN_BAS.filter((r) => codex.cartes.some((c) => c.rarity === r)).map((r) => h('option', { value: r }, 'Que des ' + RAR[r].label.toLowerCase() + 's')));
-  forcer.value = admin.forcer;
-  let arme = false;
-  const vider = bouton('Vider la collection', () => {
-    if (!arme) { arme = true; vider.textContent = 'Sûr ? Clique encore'; setTimeout(() => { arme = false; vider.textContent = 'Vider la collection'; }, 4000); return; }
-    faire(R.viderCollection, 'Collection vidée')();
-  }, 'btn danger');
-  return h('section', { class: 'admin', 'aria-label': 'Mode admin' },
-    h('h2', {}, 'Mode admin'),
-    h('p', {}, 'Pour tester. Il n\'existe que sur ce navigateur ; tes amis ne le voient pas.'),
-    h('div', { class: 'ligne-admin' }, h('span', {}, 'Paquets'),
+  let recherche = '';
+  let rechercheFocus = false;
+
+  function dessiner() {
+    // Paquets : un nombre libre, à ajouter, retirer ou fixer.
+    const nb = h('input', { type: 'number', min: '0', step: '1', value: '10', 'aria-label': 'Nombre de paquets', class: 'nombre-admin' });
+    const lire = () => Math.max(0, Math.floor(Number(nb.value)) || 0);
+    const paquets = h('div', { class: 'bloc-admin' },
+      h('h3', {}, 'Paquets'),
+      h('p', {}, 'Tu as ', h('b', {}, String(etat.paquets)), etat.paquets > 1 ? ' paquets.' : ' paquet.'),
       h('div', { class: 'actions' },
-        bouton('+1', faire((e) => R.ajouterPaquets(e, 1), '+1 paquet')),
-        bouton('+5', faire((e) => R.ajouterPaquets(e, 5), '+5 paquets')),
-        bouton('+10', faire((e) => R.ajouterPaquets(e, 10), '+10 paquets')),
-        bouton('Remettre le paquet du jour', faire(R.remettrePaquetDuJour, 'Le paquet du jour est de nouveau disponible')))),
-    h('div', { class: 'ligne-admin' }, h('span', {}, 'Prochains paquets'), forcer),
-    h('div', { class: 'ligne-admin' }, h('span', {}, 'Collection'),
+        nb,
+        bouton('Ajouter', () => maj(R.ajouterPaquets(etat, lire()), `+${lire()} paquets`), 'btn principal'),
+        bouton('Retirer', () => maj(R.ajouterPaquets(etat, -lire()), `−${lire()} paquets`)),
+        bouton('En avoir exactement', () => maj(R.fixerPaquets(etat, lire()), `${lire()} paquets`))),
       h('div', { class: 'actions' },
-        bouton('Donner toutes les cartes', faire((e) => R.donnerTout(e, codex.cartes), 'Toutes les cartes sont à toi')),
-        vider)),
-    h('div', { class: 'actions' }, bouton('Quitter le mode admin', () => { quitterAdmin(); toast('Mode admin quitté'); afficher(); }, 'btn discret')));
+        bouton('+1', () => maj(R.ajouterPaquets(etat, 1), '+1 paquet'), 'btn discret'),
+        bouton('+10', () => maj(R.ajouterPaquets(etat, 10), '+10 paquets'), 'btn discret'),
+        bouton('+100', () => maj(R.ajouterPaquets(etat, 100), '+100 paquets'), 'btn discret'),
+        bouton('Aucun', () => maj(R.fixerPaquets(etat, 0), 'Plus de paquet'), 'btn discret'),
+        bouton(R.paquetDuJourDispo(etat) ? 'Paquet du jour : disponible' : 'Remettre le paquet du jour',
+          () => maj(R.remettrePaquetDuJour(etat), 'Le paquet du jour est de nouveau disponible'), 'btn discret')));
+
+    // Paquets truqués : une rareté et/ou une faction.
+    const selR = h('select', { 'aria-label': 'Rareté des prochains paquets', onchange: (e) => { admin.forcer = e.target.value; } },
+      h('option', { value: '' }, 'Toutes raretés (vraies chances)'),
+      DE_HAUT_EN_BAS.filter((r) => codex.cartes.some((c) => c.rarity === r)).map((r) => h('option', { value: r }, 'Que des ' + RAR[r].label.toLowerCase() + 's')));
+    selR.value = admin.forcer;
+    const selF = h('select', { 'aria-label': 'Faction des prochains paquets', onchange: (e) => { admin.forcerFaction = e.target.value; } },
+      h('option', { value: '' }, 'Toutes factions'),
+      [...codex.factions.values()].filter((f) => codex.cartes.some((c) => (c.factions || []).includes(f.id))).map((f) => h('option', { value: f.id }, 'Que des ' + f.nom.toLowerCase().replace(/^adepte/, 'adeptes'))));
+    selF.value = admin.forcerFaction || '';
+    const truques = h('div', { class: 'bloc-admin' },
+      h('h3', {}, 'Prochains paquets'),
+      h('p', {}, 'Pour tester une ouverture : choisis ce qui doit tomber. Ça reste réglé jusqu\'à ce que tu changes.'),
+      h('div', { class: 'actions' }, selR, selF, h('a', { class: 'btn', href: '#paquets' }, 'Aller ouvrir')));
+
+    // Cartes : tout donner, tout vider, ou carte par carte.
+    let arme = false;
+    const vider = bouton('Vider la collection', () => {
+      if (!arme) { arme = true; vider.textContent = 'Sûr ? Clique encore'; setTimeout(() => { arme = false; vider.textContent = 'Vider la collection'; }, 4000); return; }
+      maj(R.viderCollection(etat), 'Collection vidée');
+    }, 'btn danger');
+    const champ = h('input', { type: 'search', placeholder: 'Chercher une carte à donner ou retirer…', 'aria-label': 'Chercher une carte', autocomplete: 'off', value: recherche });
+    const liste = h('ul', { class: 'liste-admin' });
+    const remplirListe = () => {
+      const q = norm(recherche);
+      const toutes = codex.cartes.filter((e) => !q || norm([e.title, e.honor, legendeDe(e)].join(' ')).includes(q))
+        .sort((a, b) => !!etat.collection[b.id] - !!etat.collection[a.id] || R.RANG[b.rarity] - R.RANG[a.rarity] || a.title.localeCompare(b.title, 'fr'));
+      const montrees = q ? toutes : toutes.filter((e) => etat.collection[e.id]);
+      const lignes = montrees.slice(0, 60).map((e) => {
+        const n = etat.collection[e.id] || 0;
+        const fixer = (v) => () => { changer(R.fixerExemplaires(etat, e.id, v)); remplirListe(); };
+        return h('li', { class: n ? '' : 'pas-a-moi' },
+          h('span', { class: 'pt', style: '--c:' + RAR[e.rarity].c, title: RAR[e.rarity].label }),
+          h('span', { class: 'nom-admin' }, h('b', {}, e.title), h('small', {}, legendeDe(e))),
+          h('span', { class: 'compteur' },
+            h('button', { type: 'button', class: 'pilule', 'aria-label': 'Retirer un exemplaire de ' + e.title, disabled: !n, onclick: fixer(n - 1) }, '−'),
+            h('b', { 'aria-label': n + ' exemplaires' }, String(n)),
+            h('button', { type: 'button', class: 'pilule', 'aria-label': 'Ajouter un exemplaire de ' + e.title, onclick: fixer(n + 1) }, '+'),
+            n ? h('button', { type: 'button', class: 'pilule', 'aria-label': 'Retirer ' + e.title + ' de la collection', onclick: fixer(0) }, 'Retirer') : null));
+      });
+      liste.replaceChildren(...lignes);
+      if (!lignes.length) liste.append(h('li', { class: 'vide-admin' }, q ? 'Aucune carte ne correspond.' : 'Ta collection est vide. Cherche une carte pour te la donner.'));
+      if (montrees.length > 60) liste.append(h('li', { class: 'vide-admin' }, `… et ${montrees.length - 60} autres : précise ta recherche.`));
+    };
+    let qt;
+    champ.addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(() => { recherche = champ.value.trim(); remplirListe(); }, 120); });
+    champ.addEventListener('focus', () => { rechercheFocus = true; });
+    champ.addEventListener('blur', () => { rechercheFocus = false; });
+    remplirListe();
+    const cartes = h('div', { class: 'bloc-admin' },
+      h('h3', {}, 'Cartes'),
+      h('p', {}, 'Sans recherche : tes cartes. Avec une recherche : toutes les cartes du jeu, pour en donner ou en retirer.'),
+      h('div', { class: 'actions' },
+        bouton('Donner toutes les cartes', () => maj(R.donnerTout(etat, codex.cartes), 'Toutes les cartes sont à toi')),
+        vider),
+      champ, liste);
+
+    panneau.replaceChildren(
+      h('div', { class: 'tete-admin' }, h('h2', {}, 'Mode admin'),
+        bouton('Quitter le mode admin', () => { quitterAdmin(); toast('Mode admin quitté'); afficher(); }, 'btn discret')),
+      h('p', {}, 'Pour tester tout le jeu. Il ne s\'active que sur ce navigateur, avec le code.'),
+      paquets, truques, cartes);
+    if (rechercheFocus) champ.focus();
+  }
+  dessiner();
+  return panneau;
 }
 
 /* ---------- carte en grand ---------- */

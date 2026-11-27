@@ -18,10 +18,10 @@ Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront e
   (elles ne tombent jamais dans les paquets).
 - **Profil** : tes chiffres, et enregistrer ou recharger ta sauvegarde (pour changer d'appareil).
 - Trois paquets de bienvenue au premier lancement. La sauvegarde vit dans le navigateur.
-- **Mode admin** (pour tester) : ouvrir la page avec `?admin` à la fin de l'adresse
-  (https://pink-rain.github.io/Eraser_Arena/?admin). Dans le profil : ajouter des paquets, remettre le
-  paquet du jour, truquer les prochains paquets (que des légendaires…), se donner toutes les cartes,
-  vider la collection. Il reste actif sur ce navigateur jusqu'à « Quitter le mode admin ».
+- **Mode admin** (pour tester tout le jeu) : en bas du profil, « Mode admin », puis le code.
+  Paquets à volonté (un nombre libre à ajouter, retirer ou fixer), paquet du jour remis, prochains paquets
+  truqués par rareté et/ou par faction, toutes les cartes d'un coup, collection vidée, et chaque carte
+  ajoutée ou retirée une par une. Il reste actif sur ce navigateur jusqu'à « Quitter le mode admin ».
 
 ## Factions et types
 
