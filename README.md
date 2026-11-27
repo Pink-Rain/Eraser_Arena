@@ -11,13 +11,16 @@ Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront e
 - **Accueil** : tes paquets, le paquet du jour (gratuit, un par jour, renouvelé à minuit), ta collection
   par rareté, tes dernières cartes.
 - **Paquets** : 5 cartes par paquet, révélées de la plus modeste à la plus rare ; la dernière est au moins
-  super rare. Avant d'être retournées, les grandes raretés brillent déjà ; une épique ou une légendaire
+  rare. Taux par carte (cartes 1 à 4) : très commune 42 %, commune 30 %, rare 17 %, super rare 8 %,
+  épique 2,5 %, légendaire 0,5 %. Dernière carte : rare 62 %, super rare 25 %, épique 9 %, légendaire 4 %.
+  Pas de garantie anti-malchance. Avant d'être retournées, les grandes raretés brillent déjà ; une épique ou une légendaire
   éclate en étincelles. Les chances de tirage sont affichées.
 - **Collection** : seulement tes cartes, avec leur nombre d'exemplaires ; triées par rareté ou par faction.
-- **Codex** : toutes les cartes du jeu, et des cartes exemples pour chaque rareté qu'une faction n'a pas encore
-  (elles ne tombent jamais dans les paquets).
-- **Profil** : tes chiffres, et enregistrer ou recharger ta sauvegarde (pour changer d'appareil).
-- Trois paquets de bienvenue au premier lancement. La sauvegarde vit dans le navigateur.
+- **Codex** : toutes les cartes du jeu, et des cartes exemples pour chaque rareté qu'une faction n'a pas encore.
+  Elles tombent dans les paquets comme les autres, en attendant les vraies cartes.
+- **Profil** : tes chiffres.
+- Trois paquets de bienvenue au premier lancement. Pour l'instant, la partie vit dans le navigateur ;
+  les comptes en ligne viendront la remplacer.
 - **Mode admin** (pour tester tout le jeu) : en bas du profil, « Mode admin », puis le code.
   Paquets à volonté (un nombre libre à ajouter, retirer ou fixer), paquet du jour remis, prochains paquets
   truqués par rareté et/ou par faction, toutes les cartes d'un coup, collection vidée, et chaque carte

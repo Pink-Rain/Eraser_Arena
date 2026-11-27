@@ -5,13 +5,15 @@
 export const RARETES = ['trescommune', 'commune', 'rare', 'superrare', 'epique', 'legendaire'];
 export const RANG = Object.fromEntries(RARETES.map((r, i) => [r, i]));
 
-// Poids de tirage de chaque rareté. Seules comptent les raretés qui existent dans le Codex :
-// tant qu'il n'y a que des rares et plus, les poids sont recalculés entre elles.
-export const POIDS = { trescommune: 40, commune: 28, rare: 18, superrare: 9, epique: 4, legendaire: 1 };
+// Taux de drop, en pourcentage, pour chaque carte du paquet.
+// Cartes 1 à 4 :
+export const TAUX = { trescommune: 42, commune: 30, rare: 17, superrare: 8, epique: 2.5, legendaire: 0.5 };
+// 5e et dernière carte : toujours au moins rare.
+export const TAUX_DERNIERE = { rare: 62, superrare: 25, epique: 9, legendaire: 4 };
+// Pas de garantie anti-malchance : aucune carte n'est assurée au bout d'un certain nombre de paquets.
+// Si une rareté n'a aucune carte (paquet truqué par l'admin…), son taux est partagé entre les autres.
 
 export const TAILLE_PAQUET = 5;
-// La dernière carte du paquet est au moins de cette rareté (s'il en existe).
-export const GARANTIE_DERNIERE = 'superrare';
 export const PAQUETS_DE_BIENVENUE = 3;
 export const HISTORIQUE_MAX = 30;
 export const VERSION = 1;
@@ -64,43 +66,47 @@ export function avantProchainPaquet(maintenant = new Date()) {
 
 /* ---------- tirage ---------- */
 
-// Les raretés présentes dans la réserve, avec leur poids et leurs cartes.
+// Les cartes de la réserve, rangées par rareté.
 function parRarete(reserve) {
   const groupes = new Map();
   for (const c of reserve) {
-    if (!(c.rarity in POIDS)) continue;
+    if (!(c.rarity in RANG)) continue;
     if (!groupes.has(c.rarity)) groupes.set(c.rarity, []);
     groupes.get(c.rarity).push(c);
   }
   return groupes;
 }
 
-// Chance de chaque rareté pour une carte ordinaire du paquet (pour l'afficher au joueur).
-export function chances(reserve, minimum = null) {
-  const g = parRarete(reserve);
-  const rs = [...g.keys()].filter((r) => minimum == null || RANG[r] >= RANG[minimum]);
-  const total = rs.reduce((s, r) => s + POIDS[r], 0);
-  return Object.fromEntries(RARETES.filter((r) => rs.includes(r)).map((r) => [r, POIDS[r] / total]));
+// La table de taux qui s'applique, réduite aux raretés présentes et ramenée à 1.
+function tableEffective(groupes, derniere) {
+  for (const table of derniere ? [TAUX_DERNIERE, TAUX] : [TAUX]) {
+    const rs = RARETES.filter((r) => groupes.has(r) && table[r] > 0);
+    const total = rs.reduce((s, r) => s + table[r], 0);
+    if (total > 0) return Object.fromEntries(rs.map((r) => [r, table[r] / total]));
+  }
+  const rs = RARETES.filter((r) => groupes.has(r));
+  return Object.fromEntries(rs.map((r) => [r, 1 / rs.length]));
 }
 
-function choisirRarete(groupes, hasard, minimum) {
-  let rs = [...groupes.keys()];
-  if (minimum) { const hautes = rs.filter((r) => RANG[r] >= RANG[minimum]); if (hautes.length) rs = hautes; }
-  rs.sort((a, b) => RANG[a] - RANG[b]);
-  const total = rs.reduce((s, r) => s + POIDS[r], 0);
-  let x = hasard() * total;
-  for (const r of rs) { x -= POIDS[r]; if (x < 0) return r; }
+// Chance de chaque rareté, pour les cartes 1 à 4 ou pour la dernière (à afficher au joueur).
+export const chances = (reserve, derniere = false) => tableEffective(parRarete(reserve), derniere);
+
+function choisirRarete(table, hasard) {
+  let x = hasard();
+  const rs = Object.keys(table);
+  for (const r of rs) { x -= table[r]; if (x < 0) return r; }
   return rs[rs.length - 1];
 }
 
-// Tire un paquet dans la réserve (les cartes du Codex). hasard() rend un nombre dans [0, 1).
+// Tire un paquet dans la réserve (les cartes du jeu, exemples compris). hasard() rend un nombre dans [0, 1).
 // Une même carte évite de sortir deux fois dans un paquet, sauf si la rareté n'a plus d'autre choix.
 export function tirerPaquet(reserve, hasard = Math.random, taille = TAILLE_PAQUET) {
   const groupes = parRarete(reserve);
   if (!groupes.size) return [];
+  const tOrdinaire = tableEffective(groupes, false), tDerniere = tableEffective(groupes, true);
   const tirage = [];
   for (let i = 0; i < taille; i++) {
-    const r = choisirRarete(groupes, hasard, i === taille - 1 ? GARANTIE_DERNIERE : null);
+    const r = choisirRarete(i === taille - 1 ? tDerniere : tOrdinaire, hasard);
     const cartes = groupes.get(r);
     const libres = cartes.filter((c) => !tirage.includes(c));
     const parmi = libres.length ? libres : cartes;

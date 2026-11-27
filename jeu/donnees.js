@@ -20,13 +20,14 @@ export async function chargerCodex(base = '') {
   const exemples = cartesExemples(factions, cartes);
   return {
     tags, factions, cartes, exemples, exporteLe: data.exportedAt,
+    jeu: [...cartes, ...exemples], // tout ce qui peut tomber dans un paquet
     parId: new Map([...cartes, ...exemples].map((c) => [c.id, c])),
   };
 }
 
 // Les cartes exemples : pour chaque faction, une carte par rareté qu'aucune vraie carte n'occupe encore
-// (une bicolore compte pour ses deux factions). Elles ne servent qu'à voir à quoi ressemblera la carte :
-// elles sont dans le Codex, jamais dans les paquets ni dans la collection.
+// (une bicolore compte pour ses deux factions). Elles tiennent la place des futures cartes :
+// elles tombent dans les paquets comme les autres, et vont dans la collection.
 // Dès qu'une vraie carte prend la place, l'exemple disparaît tout seul.
 export const RARETES_EXEMPLES = ['legendaire', 'epique', 'superrare', 'rare', 'commune', 'trescommune'];
 export function cartesExemples(factions, cartes) {
