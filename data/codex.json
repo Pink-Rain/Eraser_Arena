@@ -1,0 +1,840 @@
+{
+ "source": "Codex d'Eraser",
+ "exportedAt": "2026-11-27",
+ "tags": [
+  {
+   "id": "mortels",
+   "name": "Mortels",
+   "parentId": null,
+   "color": "#c9732e",
+   "order": 1,
+   "description": "Les peuples qui naissent et meurent : humains, orques, peuples inventés."
+  },
+  {
+   "id": "autres",
+   "name": "Les Autres",
+   "parentId": null,
+   "color": "#7a5aa8",
+   "order": 2,
+   "description": "Tout ce qui n'est pas mortel : gardiens, dieux, titans, nids-morts."
+  },
+  {
+   "id": "gardiens",
+   "name": "Divinités",
+   "parentId": "autres",
+   "color": "#a483c9",
+   "order": 1,
+   "description": "Famille d'êtres qui regroupe les Neuf (les dieux), les titans et les nids-morts. Rangement à confirmer."
+  },
+  {
+   "id": "titans",
+   "name": "Titans",
+   "parentId": "autres",
+   "color": "#8e2a1f",
+   "order": 2
+  },
+  {
+   "id": "nids-morts",
+   "name": "Nimors",
+   "parentId": "autres",
+   "color": "#3a2448",
+   "order": 3
+  },
+  {
+   "id": "l4h64l9b1kuwrb425pgu",
+   "name": "Autres",
+   "parentId": "autres",
+   "color": "#f0ead8",
+   "order": 1795618207831,
+   "logo": "autres",
+   "silhouette": "autres-ombre"
+  },
+  {
+   "id": "naadrian",
+   "name": "Näadrian",
+   "parentId": "autres",
+   "color": "#d8ccb4",
+   "order": 1795620000001,
+   "logo": "naadrian",
+   "description": "Les Näadry (au pluriel Näadrian) : des sortes de squelettes."
+  },
+  {
+   "id": "descendants",
+   "name": "Descendants des dieux",
+   "parentId": "autres",
+   "color": "#7fb0d0",
+   "order": 1795620000002,
+   "logo": "descendants",
+   "description": "Rangement à confirmer."
+  },
+  {
+   "id": "sirenes",
+   "name": "Sirènes",
+   "parentId": "creatures",
+   "color": "#8fc4b0",
+   "order": 1
+  },
+  {
+   "id": "vampires",
+   "name": "Vampires",
+   "parentId": "creatures",
+   "color": "#84423e",
+   "order": 2
+  },
+  {
+   "id": "automes",
+   "name": "Haut-hommes",
+   "parentId": "humains",
+   "color": "#8a6a2e",
+   "order": 1
+  },
+  {
+   "id": "valhelm",
+   "name": "Humaines de Valhelm",
+   "parentId": "humains",
+   "color": "#5a2a4e",
+   "order": 2
+  },
+  {
+   "id": "sirois",
+   "name": "Cir'hois",
+   "parentId": "humains",
+   "color": "#2f6b5e",
+   "order": 3
+  },
+  {
+   "id": "peuple-libre",
+   "name": "Peuple libre",
+   "parentId": "mortels",
+   "color": "#3a8a9e",
+   "order": 3,
+   "description": "Un peuple qui mélange tout un tas d'origines différentes."
+  },
+  {
+   "id": "creatures",
+   "name": "Créatures",
+   "parentId": "mortels",
+   "color": "#4a4a6a",
+   "order": 4,
+   "description": "Les autres créatures mortelles : sirènes, vampires, et d'autres à venir."
+  },
+  {
+   "id": "qojlwr9ant38o6bh83kt",
+   "name": "Huvry'ors",
+   "parentId": "mortels",
+   "color": "#8a6a4a",
+   "order": 1795363165750,
+   "logo": "huvryors"
+  },
+  {
+   "id": "2w138gro8f95myah84dl",
+   "name": "Hesh'lir",
+   "parentId": "mortels",
+   "color": "#5c544e",
+   "order": 1795363181078,
+   "logo": "heshlir"
+  },
+  {
+   "id": "nc8xw9ink8hfdt24dd3s",
+   "name": "Nash'mur",
+   "parentId": "mortels",
+   "color": "#2c4a6e",
+   "order": 1795363187353,
+   "logo": "nashmur"
+  },
+  {
+   "id": "u7ax07meut8uy35lw5r2",
+   "name": "Empire du sang",
+   "parentId": "mortels",
+   "color": "#4e1a17",
+   "order": 1795617906756,
+   "logo": "empire-sang"
+  },
+  {
+   "id": "69cpj6rp9svofnoshbzs",
+   "name": "L'Humanité",
+   "parentId": "mortels",
+   "color": "#ffc852",
+   "order": 1795617954427,
+   "logo": "humanite"
+  },
+  {
+   "id": "cysars",
+   "name": "Cysars",
+   "parentId": "mortels",
+   "color": "#d4471c",
+   "order": 1795620000000,
+   "logo": "cysars",
+   "description": "Peuple du feu qui vit sous terre."
+  },
+  {
+   "id": "sorcieres",
+   "name": "Sorcières",
+   "parentId": "mortels",
+   "color": "#4f8f7f",
+   "order": 1795621000000,
+   "logo": "sorcieres"
+  },
+  {
+   "id": "orques-sang",
+   "name": "Orcs du sang",
+   "parentId": "orques",
+   "color": "#b0202e",
+   "order": 1
+  },
+  {
+   "id": "orques-arides",
+   "name": "Orcs des terres arides",
+   "parentId": "orques",
+   "color": "#e0955a",
+   "order": 2
+  },
+  {
+   "id": "orques-forets",
+   "name": "Orcs des forêts",
+   "parentId": "orques",
+   "color": "#2f4426",
+   "order": 3
+  },
+  {
+   "id": "zaldry",
+   "name": "Zal'Dry",
+   "parentId": "orques",
+   "color": "#b8b24a",
+   "order": 4,
+   "logo": "zaldry",
+   "description": "Des orcs difformes, presque des gobelins. Hideux."
+  },
+  {
+   "id": "humains",
+   "name": "Humains",
+   "parentId": "qojlwr9ant38o6bh83kt",
+   "color": "#a68a64",
+   "order": 1
+  },
+  {
+   "id": "orques",
+   "name": "Orcs",
+   "parentId": "qojlwr9ant38o6bh83kt",
+   "color": "#6f8a46",
+   "order": 2
+  }
+ ],
+ "entries": [
+  {
+   "id": "c-deonna",
+   "title": "Deonna",
+   "kind": "personnage",
+   "rarity": "legendaire",
+   "honor": "L'Équilibre et le Chaos",
+   "tagIds": [
+    "gardiens"
+   ],
+   "factionId": "gardiens"
+  },
+  {
+   "id": "c-erasersias",
+   "title": "Erasersias",
+   "kind": "personnage",
+   "rarity": "legendaire",
+   "honor": "Créateur de planètes, Père des Gardiens",
+   "tagIds": [
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-hera",
+   "title": "Hera",
+   "kind": "personnage",
+   "rarity": "legendaire",
+   "honor": "Gardienne de la Jouissance et de la Souffrance",
+   "tagIds": [
+    "gardiens"
+   ],
+   "factionId": "gardiens"
+  },
+  {
+   "id": "0e81xgu7apax8dq5ib8r",
+   "title": "Khim Tay",
+   "kind": "personnage",
+   "rarity": "legendaire",
+   "honor": "Gardien de la Vie et de la Mort",
+   "tagIds": [
+    "gardiens"
+   ],
+   "factionId": "gardiens",
+   "description": "Gardien de la Vie et de la Mort"
+  },
+  {
+   "id": "c-marggorn",
+   "title": "Marggorn",
+   "kind": "personnage",
+   "rarity": "legendaire",
+   "honor": "Titan primordial du feu et du tonnerre",
+   "tagIds": [
+    "titans"
+   ],
+   "factionId": "titans"
+  },
+  {
+   "id": "c-pere-saltim",
+   "title": "Père Saltim",
+   "kind": "personnage",
+   "rarity": "legendaire",
+   "honor": "Une légende de Noël",
+   "tagIds": [
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-renanda",
+   "title": "Rénandä",
+   "kind": "personnage",
+   "rarity": "legendaire",
+   "honor": "Reine des Profondeurs",
+   "tagIds": [
+    "titans"
+   ],
+   "factionId": "titans"
+  },
+  {
+   "id": "c-aldmarald",
+   "title": "Aldmarald",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Le Marionnettiste",
+   "tagIds": [
+    "descendants"
+   ],
+   "factionId": "descendants"
+  },
+  {
+   "id": "c-amrar-ga",
+   "title": "Amrar'ga",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Fils de Khim Tay",
+   "tagIds": [
+    "descendants"
+   ],
+   "factionId": "descendants"
+  },
+  {
+   "id": "c-aprete",
+   "title": "Aprété",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Titre en cours",
+   "tagIds": [
+    "nids-morts"
+   ],
+   "factionId": "nids-morts"
+  },
+  {
+   "id": "c-avadres-l-impuissant",
+   "title": "Avadrës l'impuissant",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Le Labyrinthe des Agonias",
+   "tagIds": [
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-aarakis",
+   "title": "Aärakis",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Titre en cours",
+   "tagIds": [
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-calamite",
+   "title": "Calamité",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Titre en cours",
+   "tagIds": [
+    "nids-morts"
+   ],
+   "factionId": "nids-morts"
+  },
+  {
+   "id": "c-cauchemar",
+   "title": "Cauchemar",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Entité cosmique de l'Entre-Deux",
+   "tagIds": [
+    "nids-morts"
+   ],
+   "factionId": "nids-morts"
+  },
+  {
+   "id": "c-desespoir",
+   "title": "Désespoir",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Titre en cours",
+   "tagIds": [
+    "nids-morts"
+   ],
+   "factionId": "nids-morts"
+  },
+  {
+   "id": "c-hastur",
+   "title": "Hastur",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Gardien de la Perpétuation et de l'Extinction",
+   "tagIds": [
+    "gardiens"
+   ],
+   "factionId": "gardiens"
+  },
+  {
+   "id": "c-huacolt",
+   "title": "Huacolt",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Titre en cours",
+   "tagIds": [
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-kal-go",
+   "title": "Kal'Go",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Mère des Zal'Dry",
+   "tagIds": [
+    "sorcieres",
+    "zaldry"
+   ],
+   "factionId": "sorcieres",
+   "factionId2": "zaldry"
+  },
+  {
+   "id": "c-kalvan",
+   "title": "Kalvan",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Gardien de la Justice et du Crime",
+   "tagIds": [
+    "gardiens"
+   ],
+   "factionId": "gardiens"
+  },
+  {
+   "id": "c-lila",
+   "title": "Lila",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Dernière des Enfants maudits",
+   "tagIds": [
+    "descendants"
+   ],
+   "factionId": "descendants"
+  },
+  {
+   "id": "c-lisvall-ba",
+   "title": "Lisvall'Ba",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Aînée des Enfants maudits",
+   "tagIds": [
+    "descendants",
+    "u7ax07meut8uy35lw5r2"
+   ],
+   "factionId": "descendants",
+   "factionId2": "u7ax07meut8uy35lw5r2"
+  },
+  {
+   "id": "c-meerymah-al-flede",
+   "title": "Meerymah Al Flède",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Tueuse de Dieu",
+   "tagIds": [
+    "valhelm"
+   ],
+   "factionId": "valhelm"
+  },
+  {
+   "id": "c-rosariel",
+   "title": "Rosariel",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Troisième des Enfants maudits",
+   "tagIds": [
+    "descendants",
+    "u7ax07meut8uy35lw5r2"
+   ],
+   "factionId": "descendants",
+   "factionId2": "u7ax07meut8uy35lw5r2"
+  },
+  {
+   "id": "c-rotas-qhat",
+   "title": "Rotas Qhat",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Pirate näadry exilé",
+   "tagIds": [
+    "naadrian"
+   ],
+   "factionId": "naadrian"
+  },
+  {
+   "id": "c-sarar",
+   "title": "Sarar",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Roi de l'Humanité",
+   "tagIds": [
+    "69cpj6rp9svofnoshbzs"
+   ],
+   "factionId": "69cpj6rp9svofnoshbzs"
+  },
+  {
+   "id": "c-saalafail",
+   "title": "Saälafaïl",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Gardien de la Chance et du Contrôle",
+   "tagIds": [
+    "gardiens"
+   ],
+   "factionId": "gardiens"
+  },
+  {
+   "id": "c-umburz",
+   "title": "Umburz",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Père de Lisvall'Ba",
+   "tagIds": [
+    "descendants"
+   ],
+   "factionId": "descendants"
+  },
+  {
+   "id": "c-za-lelelele",
+   "title": "Za'Lelelele",
+   "kind": "personnage",
+   "rarity": "epique",
+   "honor": "Empereur des Zal'Dry",
+   "tagIds": [
+    "naadrian"
+   ],
+   "factionId": "naadrian"
+  },
+  {
+   "id": "c-alize-a-diel",
+   "title": "Alize A'Diel",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Titre en cours",
+   "tagIds": [
+    "valhelm",
+    "descendants"
+   ],
+   "factionId": "valhelm",
+   "factionId2": "descendants"
+  },
+  {
+   "id": "c-animenor",
+   "title": "Animenor",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Combattant de Khim Tay",
+   "tagIds": [
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-colette-du-bois",
+   "title": "Colette du bois",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Sorcière cir'hoitte",
+   "tagIds": [
+    "sorcieres",
+    "sirois"
+   ],
+   "factionId": "sorcieres",
+   "factionId2": "sirois"
+  },
+  {
+   "id": "c-dalpa-abigael",
+   "title": "Dalpa / Abigael",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Deuxième des Enfants maudits",
+   "tagIds": [
+    "valhelm",
+    "descendants"
+   ],
+   "factionId": "valhelm",
+   "factionId2": "descendants"
+  },
+  {
+   "id": "c-dirakas",
+   "title": "Dirakäs",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "L'Araignée mère",
+   "tagIds": [
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-kahon",
+   "title": "Kahon",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Empereur des Cysars",
+   "tagIds": [
+    "cysars"
+   ],
+   "factionId": "cysars"
+  },
+  {
+   "id": "c-neona-raxh",
+   "title": "Neona Raxh",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Réincarnation d'Hepo",
+   "tagIds": [
+    "naadrian",
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "naadrian",
+   "factionId2": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-ruth",
+   "title": "Ruth",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Exilé des Näadrian",
+   "tagIds": [
+    "naadrian"
+   ],
+   "factionId": "naadrian"
+  },
+  {
+   "id": "c-saa-vie",
+   "title": "Saä Vie",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Chef des Näadrian",
+   "tagIds": [
+    "naadrian"
+   ],
+   "factionId": "naadrian"
+  },
+  {
+   "id": "c-syrarielle-mantis",
+   "title": "Syrariëlle Mantis",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Oracle des Näadrian",
+   "tagIds": [
+    "naadrian"
+   ],
+   "factionId": "naadrian"
+  },
+  {
+   "id": "c-theodoas",
+   "title": "Theodoas",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Descendant d'Ulris",
+   "tagIds": [
+    "descendants"
+   ],
+   "factionId": "descendants"
+  },
+  {
+   "id": "c-ulris",
+   "title": "Ulris",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "Fils de Khim Tay et de la Lune",
+   "tagIds": [
+    "descendants"
+   ],
+   "factionId": "descendants"
+  },
+  {
+   "id": "c-umis-grise-loeil-de-la-descruction",
+   "title": "Umis Grise",
+   "kind": "personnage",
+   "rarity": "superrare",
+   "honor": "L'Œil de la destruction",
+   "tagIds": [
+    "valhelm",
+    "l4h64l9b1kuwrb425pgu"
+   ],
+   "factionId": "valhelm",
+   "factionId2": "l4h64l9b1kuwrb425pgu"
+  },
+  {
+   "id": "c-amon-akar",
+   "title": "Amon Akar",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Dernière Épée des Näadrian",
+   "tagIds": [
+    "naadrian"
+   ],
+   "factionId": "naadrian"
+  },
+  {
+   "id": "c-constante-desang",
+   "title": "Constante Desäng",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Scientifique de l'Humanité",
+   "tagIds": [
+    "69cpj6rp9svofnoshbzs"
+   ],
+   "factionId": "69cpj6rp9svofnoshbzs"
+  },
+  {
+   "id": "c-etel-lefeuvre-lelenya",
+   "title": "Etel Lefeuvre-Lelenya",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Tueuse de l'Humanité",
+   "tagIds": [
+    "valhelm",
+    "69cpj6rp9svofnoshbzs"
+   ],
+   "factionId": "valhelm",
+   "factionId2": "69cpj6rp9svofnoshbzs"
+  },
+  {
+   "id": "c-hector-funfriegen-von-derber",
+   "title": "Hector Funfriegen Von Derber",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Alchimiste fou",
+   "tagIds": [
+    "automes"
+   ],
+   "factionId": "automes"
+  },
+  {
+   "id": "c-leopold-de-ponce",
+   "title": "Leopold De Ponce",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Le Traître illusionniste",
+   "tagIds": [
+    "automes"
+   ],
+   "factionId": "automes"
+  },
+  {
+   "id": "c-loup-le-baud",
+   "title": "Loup Le Baud",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Nécromancien assoiffé",
+   "tagIds": [
+    "automes"
+   ],
+   "factionId": "automes"
+  },
+  {
+   "id": "c-miakrevi",
+   "title": "Miakrevi",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Le Pirate à la lanterne",
+   "tagIds": [
+    "nc8xw9ink8hfdt24dd3s",
+    "peuple-libre"
+   ],
+   "factionId": "nc8xw9ink8hfdt24dd3s",
+   "factionId2": "peuple-libre"
+  },
+  {
+   "id": "c-rinritargar",
+   "title": "Rinritargar",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Exilé des Cysars",
+   "tagIds": [
+    "cysars"
+   ],
+   "factionId": "cysars"
+  },
+  {
+   "id": "c-sieg-korvin",
+   "title": "Sieg Korvin",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "L'Épéiste de l'Inquisition de la Rose Ardente",
+   "tagIds": [
+    "valhelm"
+   ],
+   "factionId": "valhelm"
+  },
+  {
+   "id": "c-sirius-brimstone",
+   "title": "Sirius Brimstone",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Chef de l'Inquisition de la Rose Ardente",
+   "tagIds": [
+    "valhelm"
+   ],
+   "factionId": "valhelm"
+  },
+  {
+   "id": "c-vasile-davorin",
+   "title": "Vasile Davorin",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Chef de l'Ordre des Béants",
+   "tagIds": [
+    "vampires"
+   ],
+   "factionId": "vampires"
+  },
+  {
+   "id": "c-ymrid",
+   "title": "Ymrid",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Roi des Huvry'ors",
+   "tagIds": [
+    "qojlwr9ant38o6bh83kt"
+   ],
+   "factionId": "qojlwr9ant38o6bh83kt"
+  },
+  {
+   "id": "c-zajaex-us",
+   "title": "Zajaex'Us",
+   "kind": "personnage",
+   "rarity": "rare",
+   "honor": "Fils de Lisvall'Ba",
+   "tagIds": [
+    "descendants"
+   ],
+   "factionId": "descendants"
+  }
+ ]
+}
