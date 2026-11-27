@@ -230,7 +230,9 @@
    "tagIds": [
     "gardiens"
    ],
-   "factionId": "gardiens"
+   "factionId": "gardiens",
+   "attack": 7,
+   "life": 7
   },
   {
    "id": "c-erasersias",
@@ -241,7 +243,9 @@
    "tagIds": [
     "l4h64l9b1kuwrb425pgu"
    ],
-   "factionId": "l4h64l9b1kuwrb425pgu"
+   "factionId": "l4h64l9b1kuwrb425pgu",
+   "attack": 0,
+   "life": 20
   },
   {
    "id": "c-hera",
@@ -252,7 +256,9 @@
    "tagIds": [
     "gardiens"
    ],
-   "factionId": "gardiens"
+   "factionId": "gardiens",
+   "attack": 10,
+   "life": 7
   },
   {
    "id": "0e81xgu7apax8dq5ib8r",
@@ -264,7 +270,9 @@
     "gardiens"
    ],
    "factionId": "gardiens",
-   "description": "Gardien de la Vie et de la Mort"
+   "description": "Gardien de la Vie et de la Mort",
+   "attack": 9,
+   "life": 12
   },
   {
    "id": "c-marggorn",
@@ -275,7 +283,9 @@
    "tagIds": [
     "titans"
    ],
-   "factionId": "titans"
+   "factionId": "titans",
+   "attack": 12,
+   "life": 8
   },
   {
    "id": "c-pere-saltim",
@@ -286,7 +296,9 @@
    "tagIds": [
     "l4h64l9b1kuwrb425pgu"
    ],
-   "factionId": "l4h64l9b1kuwrb425pgu"
+   "factionId": "l4h64l9b1kuwrb425pgu",
+   "attack": 7,
+   "life": 6
   },
   {
    "id": "c-renanda",
@@ -297,7 +309,9 @@
    "tagIds": [
     "titans"
    ],
-   "factionId": "titans"
+   "factionId": "titans",
+   "attack": 10,
+   "life": 14
   },
   {
    "id": "c-aldmarald",
@@ -308,7 +322,9 @@
    "tagIds": [
     "descendants"
    ],
-   "factionId": "descendants"
+   "factionId": "descendants",
+   "attack": 5,
+   "life": 9
   },
   {
    "id": "c-amrar-ga",
@@ -319,7 +335,9 @@
    "tagIds": [
     "descendants"
    ],
-   "factionId": "descendants"
+   "factionId": "descendants",
+   "attack": 6,
+   "life": 8
   },
   {
    "id": "c-aprete",
@@ -330,7 +348,9 @@
    "tagIds": [
     "nids-morts"
    ],
-   "factionId": "nids-morts"
+   "factionId": "nids-morts",
+   "attack": 8,
+   "life": 6
   },
   {
    "id": "c-avadres-l-impuissant",
@@ -341,7 +361,9 @@
    "tagIds": [
     "l4h64l9b1kuwrb425pgu"
    ],
-   "factionId": "l4h64l9b1kuwrb425pgu"
+   "factionId": "l4h64l9b1kuwrb425pgu",
+   "attack": 3,
+   "life": 10
   },
   {
    "id": "c-aarakis",
@@ -352,7 +374,9 @@
    "tagIds": [
     "l4h64l9b1kuwrb425pgu"
    ],
-   "factionId": "l4h64l9b1kuwrb425pgu"
+   "factionId": "l4h64l9b1kuwrb425pgu",
+   "attack": 8,
+   "life": 5
   },
   {
    "id": "c-calamite",
@@ -363,7 +387,9 @@
    "tagIds": [
     "nids-morts"
    ],
-   "factionId": "nids-morts"
+   "factionId": "nids-morts",
+   "attack": 9,
+   "life": 6
   },
   {
    "id": "c-cauchemar",
@@ -374,7 +400,9 @@
    "tagIds": [
     "nids-morts"
    ],
-   "factionId": "nids-morts"
+   "factionId": "nids-morts",
+   "attack": 9,
+   "life": 6
   },
   {
    "id": "c-desespoir",
@@ -385,7 +413,9 @@
    "tagIds": [
     "nids-morts"
    ],
-   "factionId": "nids-morts"
+   "factionId": "nids-morts",
+   "attack": 5,
+   "life": 9
   },
   {
    "id": "c-hastur",
@@ -396,7 +426,9 @@
    "tagIds": [
     "gardiens"
    ],
-   "factionId": "gardiens"
+   "factionId": "gardiens",
+   "attack": 7,
+   "life": 7
   },
   {
    "id": "c-huacolt",
@@ -407,7 +439,9 @@
    "tagIds": [
     "l4h64l9b1kuwrb425pgu"
    ],
-   "factionId": "l4h64l9b1kuwrb425pgu"
+   "factionId": "l4h64l9b1kuwrb425pgu",
+   "attack": 9,
+   "life": 5
   },
   {
    "id": "c-kal-go",
@@ -420,7 +454,9 @@
     "zaldry"
    ],
    "factionId": "sorcieres",
-   "factionId2": "zaldry"
+   "factionId2": "zaldry",
+   "attack": 8,
+   "life": 6
   },
   {
    "id": "c-kalvan",
@@ -431,7 +467,9 @@
    "tagIds": [
     "gardiens"
    ],
-   "factionId": "gardiens"
+   "factionId": "gardiens",
+   "attack": 5,
+   "life": 9
   },
   {
    "id": "c-lila",
@@ -442,7 +480,9 @@
    "tagIds": [
     "descendants"
    ],
-   "factionId": "descendants"
+   "factionId": "descendants",
+   "attack": 8,
+   "life": 5
   },
   {
    "id": "c-lisvall-ba",
@@ -455,7 +495,9 @@
     "u7ax07meut8uy35lw5r2"
    ],
    "factionId": "descendants",
-   "factionId2": "u7ax07meut8uy35lw5r2"
+   "factionId2": "u7ax07meut8uy35lw5r2",
+   "attack": 9,
+   "life": 5
   },
   {
    "id": "c-meerymah-al-flede",
@@ -466,7 +508,9 @@
    "tagIds": [
     "valhelm"
    ],
-   "factionId": "valhelm"
+   "factionId": "valhelm",
+   "attack": 10,
+   "life": 4
   },
   {
    "id": "c-rosariel",
@@ -479,7 +523,9 @@
     "u7ax07meut8uy35lw5r2"
    ],
    "factionId": "descendants",
-   "factionId2": "u7ax07meut8uy35lw5r2"
+   "factionId2": "u7ax07meut8uy35lw5r2",
+   "attack": 8,
+   "life": 6
   },
   {
    "id": "c-rotas-qhat",
@@ -490,7 +536,9 @@
    "tagIds": [
     "naadrian"
    ],
-   "factionId": "naadrian"
+   "factionId": "naadrian",
+   "attack": 7,
+   "life": 7
   },
   {
    "id": "c-sarar",
@@ -501,7 +549,9 @@
    "tagIds": [
     "69cpj6rp9svofnoshbzs"
    ],
-   "factionId": "69cpj6rp9svofnoshbzs"
+   "factionId": "69cpj6rp9svofnoshbzs",
+   "attack": 7,
+   "life": 7
   },
   {
    "id": "c-saalafail",
@@ -512,7 +562,9 @@
    "tagIds": [
     "gardiens"
    ],
-   "factionId": "gardiens"
+   "factionId": "gardiens",
+   "attack": 7,
+   "life": 7
   },
   {
    "id": "c-umburz",
@@ -523,7 +575,9 @@
    "tagIds": [
     "descendants"
    ],
-   "factionId": "descendants"
+   "factionId": "descendants",
+   "attack": 7,
+   "life": 7
   },
   {
    "id": "c-za-lelelele",
@@ -534,7 +588,9 @@
    "tagIds": [
     "naadrian"
    ],
-   "factionId": "naadrian"
+   "factionId": "naadrian",
+   "attack": 8,
+   "life": 6
   },
   {
    "id": "c-alize-a-diel",
@@ -547,7 +603,9 @@
     "descendants"
    ],
    "factionId": "valhelm",
-   "factionId2": "descendants"
+   "factionId2": "descendants",
+   "attack": 7,
+   "life": 4
   },
   {
    "id": "c-animenor",
@@ -558,7 +616,9 @@
    "tagIds": [
     "l4h64l9b1kuwrb425pgu"
    ],
-   "factionId": "l4h64l9b1kuwrb425pgu"
+   "factionId": "l4h64l9b1kuwrb425pgu",
+   "attack": 4,
+   "life": 7
   },
   {
    "id": "c-colette-du-bois",
@@ -571,7 +631,9 @@
     "sirois"
    ],
    "factionId": "sorcieres",
-   "factionId2": "sirois"
+   "factionId2": "sirois",
+   "attack": 6,
+   "life": 4
   },
   {
    "id": "c-dalpa-abigael",
@@ -584,7 +646,9 @@
     "descendants"
    ],
    "factionId": "valhelm",
-   "factionId2": "descendants"
+   "factionId2": "descendants",
+   "attack": 6,
+   "life": 5
   },
   {
    "id": "c-dirakas",
@@ -595,7 +659,9 @@
    "tagIds": [
     "l4h64l9b1kuwrb425pgu"
    ],
-   "factionId": "l4h64l9b1kuwrb425pgu"
+   "factionId": "l4h64l9b1kuwrb425pgu",
+   "attack": 7,
+   "life": 5
   },
   {
    "id": "c-kahon",
@@ -606,7 +672,9 @@
    "tagIds": [
     "cysars"
    ],
-   "factionId": "cysars"
+   "factionId": "cysars",
+   "attack": 6,
+   "life": 6
   },
   {
    "id": "c-neona-raxh",
@@ -619,7 +687,9 @@
     "l4h64l9b1kuwrb425pgu"
    ],
    "factionId": "naadrian",
-   "factionId2": "l4h64l9b1kuwrb425pgu"
+   "factionId2": "l4h64l9b1kuwrb425pgu",
+   "attack": 7,
+   "life": 4
   },
   {
    "id": "c-ruth",
@@ -630,7 +700,9 @@
    "tagIds": [
     "naadrian"
    ],
-   "factionId": "naadrian"
+   "factionId": "naadrian",
+   "attack": 4,
+   "life": 7
   },
   {
    "id": "c-saa-vie",
@@ -641,7 +713,9 @@
    "tagIds": [
     "naadrian"
    ],
-   "factionId": "naadrian"
+   "factionId": "naadrian",
+   "attack": 4,
+   "life": 8
   },
   {
    "id": "c-syrarielle-mantis",
@@ -652,7 +726,9 @@
    "tagIds": [
     "naadrian"
    ],
-   "factionId": "naadrian"
+   "factionId": "naadrian",
+   "attack": 3,
+   "life": 7
   },
   {
    "id": "c-theodoas",
@@ -663,7 +739,9 @@
    "tagIds": [
     "descendants"
    ],
-   "factionId": "descendants"
+   "factionId": "descendants",
+   "attack": 7,
+   "life": 4
   },
   {
    "id": "c-ulris",
@@ -674,7 +752,9 @@
    "tagIds": [
     "descendants"
    ],
-   "factionId": "descendants"
+   "factionId": "descendants",
+   "attack": 6,
+   "life": 6
   },
   {
    "id": "c-umis-grise-loeil-de-la-descruction",
@@ -687,7 +767,9 @@
     "l4h64l9b1kuwrb425pgu"
    ],
    "factionId": "valhelm",
-   "factionId2": "l4h64l9b1kuwrb425pgu"
+   "factionId2": "l4h64l9b1kuwrb425pgu",
+   "attack": 4,
+   "life": 7
   },
   {
    "id": "c-amon-akar",
@@ -698,7 +780,9 @@
    "tagIds": [
     "naadrian"
    ],
-   "factionId": "naadrian"
+   "factionId": "naadrian",
+   "attack": 4,
+   "life": 4
   },
   {
    "id": "c-constante-desang",
@@ -709,7 +793,9 @@
    "tagIds": [
     "69cpj6rp9svofnoshbzs"
    ],
-   "factionId": "69cpj6rp9svofnoshbzs"
+   "factionId": "69cpj6rp9svofnoshbzs",
+   "attack": 4,
+   "life": 3
   },
   {
    "id": "c-etel-lefeuvre-lelenya",
@@ -722,7 +808,9 @@
     "69cpj6rp9svofnoshbzs"
    ],
    "factionId": "valhelm",
-   "factionId2": "69cpj6rp9svofnoshbzs"
+   "factionId2": "69cpj6rp9svofnoshbzs",
+   "attack": 6,
+   "life": 3
   },
   {
    "id": "c-hector-funfriegen-von-derber",
@@ -733,7 +821,9 @@
    "tagIds": [
     "automes"
    ],
-   "factionId": "automes"
+   "factionId": "automes",
+   "attack": 3,
+   "life": 5
   },
   {
    "id": "c-leopold-de-ponce",
@@ -744,7 +834,9 @@
    "tagIds": [
     "automes"
    ],
-   "factionId": "automes"
+   "factionId": "automes",
+   "attack": 5,
+   "life": 3
   },
   {
    "id": "c-loup-le-baud",
@@ -755,7 +847,9 @@
    "tagIds": [
     "automes"
    ],
-   "factionId": "automes"
+   "factionId": "automes",
+   "attack": 5,
+   "life": 3
   },
   {
    "id": "c-miakrevi",
@@ -768,7 +862,9 @@
     "peuple-libre"
    ],
    "factionId": "nc8xw9ink8hfdt24dd3s",
-   "factionId2": "peuple-libre"
+   "factionId2": "peuple-libre",
+   "attack": 4,
+   "life": 4
   },
   {
    "id": "c-rinritargar",
@@ -779,7 +875,9 @@
    "tagIds": [
     "cysars"
    ],
-   "factionId": "cysars"
+   "factionId": "cysars",
+   "attack": 5,
+   "life": 4
   },
   {
    "id": "c-sieg-korvin",
@@ -790,7 +888,9 @@
    "tagIds": [
     "valhelm"
    ],
-   "factionId": "valhelm"
+   "factionId": "valhelm",
+   "attack": 6,
+   "life": 3
   },
   {
    "id": "c-sirius-brimstone",
@@ -801,7 +901,9 @@
    "tagIds": [
     "valhelm"
    ],
-   "factionId": "valhelm"
+   "factionId": "valhelm",
+   "attack": 3,
+   "life": 6
   },
   {
    "id": "c-vasile-davorin",
@@ -812,7 +914,9 @@
    "tagIds": [
     "vampires"
    ],
-   "factionId": "vampires"
+   "factionId": "vampires",
+   "attack": 5,
+   "life": 3
   },
   {
    "id": "c-ymrid",
@@ -823,7 +927,9 @@
    "tagIds": [
     "qojlwr9ant38o6bh83kt"
    ],
-   "factionId": "qojlwr9ant38o6bh83kt"
+   "factionId": "qojlwr9ant38o6bh83kt",
+   "attack": 3,
+   "life": 6
   },
   {
    "id": "c-zajaex-us",
@@ -834,7 +940,9 @@
    "tagIds": [
     "descendants"
    ],
-   "factionId": "descendants"
+   "factionId": "descendants",
+   "attack": 5,
+   "life": 3
   }
  ]
 }

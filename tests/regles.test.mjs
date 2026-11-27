@@ -183,3 +183,13 @@ test('admin : paquet échantillon, une carte de chaque rareté', async () => {
   assert.equal(r.etat.paquets, PAQUETS_DE_BIENVENUE - 1);
   assert.equal(r.tirage.at(-1).rarity, 'legendaire');
 });
+
+test('attaque et vie : toutes les cartes en ont, dans les bornes', () => {
+  for (const c of reserveJeu) {
+    assert.ok(Number.isInteger(c.attack) && c.attack >= 0, `${c.title} (${c.id}) : attaque ${c.attack}`);
+    assert.ok(Number.isInteger(c.life) && c.life >= 1, `${c.title} (${c.id}) : vie ${c.life}`);
+    assert.ok(c.attack <= 20 && c.life <= 20, `${c.title} : au-delà de 20`);
+  }
+  const er = reserveJeu.find((c) => c.title === 'Eraserias');
+  assert.deepEqual([er.attack, er.life], [0, 20]);
+});
