@@ -91,3 +91,20 @@ test('progression et dernières cartes', () => {
   assert.equal(d.length, 4);
   assert.equal(d[0], e.historique[0].cartes.at(-1), 'la plus rare du dernier paquet en premier');
 });
+
+test('outils du mode admin', async () => {
+  const { ajouterPaquets, remettrePaquetDuJour, donnerTout, viderCollection, reserveForcee } = await import('../jeu/regles.js');
+  let e = nouvelEtat();
+  assert.equal(ajouterPaquets(e, 10).paquets, PAQUETS_DE_BIENVENUE + 10);
+  assert.equal(ajouterPaquets(e, -99).paquets, 0);
+  e = prendrePaquetDuJour(e);
+  assert.ok(paquetDuJourDispo(remettrePaquetDuJour(e)));
+  const tout = donnerTout({ ...e, collection: { [reserve[0].id]: 3 } }, reserve);
+  assert.equal(Object.keys(tout.collection).length, reserve.length);
+  assert.equal(tout.collection[reserve[0].id], 3, 'les doublons déjà là restent');
+  assert.deepEqual(viderCollection(tout).collection, {});
+  const leg = reserveForcee(reserve, 'legendaire');
+  const r = ouvrirPaquet({ ...e, paquets: 1 }, leg, graine(5));
+  assert.ok(r.tirage.every((t) => t.rarity === 'legendaire'));
+  assert.equal(reserveForcee(reserve, ''), reserve);
+});

@@ -660,9 +660,17 @@
     let size = 30; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`;
     while (ctx.measureText(card.name).width > W - 120 && size > 16) { size -= 1; ctx.font = `700 ${size}px "Cinzel", Georgia, serif`; }
     ctx.fillStyle = '#f7f1e6'; ctx.fillText(card.name, CX, 250);
-    drawFactionName(ctx, rar, card.faction.short + (card.faction2 ? ' · ' + card.faction2.short : '') + ' · ' + rar.label, 292);
-    ctx.font = 'italic 21px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.88)';
+    // Avec un type (le peuple, le groupe du Codex), le dos dit : type · rareté, puis la faction en dessous.
     let y = 352;
+    if (card.typeLabel) {
+      drawFactionName(ctx, rar, card.typeLabel + ' · ' + rar.label, 292);
+      ctx.font = 'italic 17px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.62)';
+      ctx.fillText(card.faction.name + (card.faction2 ? ' · ' + card.faction2.name : ''), CX, 326);
+      y = 378;
+    } else {
+      drawFactionName(ctx, rar, card.faction.short + (card.faction2 ? ' · ' + card.faction2.short : '') + ' · ' + rar.label, 292);
+    }
+    ctx.font = 'italic 21px "Alegreya", Georgia, serif'; ctx.fillStyle = 'rgba(240,234,224,0.88)';
     for (const line of wrap(ctx, card.description || '', W - 140)) { ctx.fillText(line, CX, y); y += 30; }
     ctx.restore();
     return out;

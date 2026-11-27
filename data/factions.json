@@ -1,0 +1,14 @@
+{
+ "note": "Les factions du jeu : elles donnent à la carte sa couleur et son logo. Le type (peuple, groupe du Codex) reste écrit au dos. Une carte peut avoir deux factions (bicolore).",
+ "factions": [
+  { "id": "sang", "nom": "Adepte du sang", "court": "Sang", "couleur": "#6e1423", "logo": "f-sang" },
+  { "id": "feu", "nom": "Adepte du feu", "court": "Feu", "couleur": "#d2481f", "logo": "f-feu" },
+  { "id": "vie-mort", "nom": "Adepte de la vie et la mort", "court": "Vie et mort", "couleur": "#4b1d6e", "logo": "f-vie-mort" },
+  { "id": "hepo", "nom": "Adepte d'Hepo", "court": "Hepo", "couleur": "#978daf", "logo": "f-hepo" },
+  { "id": "oceans", "nom": "Adepte des océans", "court": "Océans", "couleur": "#1c6ea4", "logo": "f-oceans" },
+  { "id": "nature", "nom": "Adepte de la nature", "court": "Nature", "couleur": "#3d7d38", "logo": "f-nature" },
+  { "id": "filitus", "nom": "Adepte de Filitus", "court": "Filitus", "couleur": "#d6c39c", "logo": "f-filitus" },
+  { "id": "neutre", "nom": "Neutre", "court": "Neutre", "couleur": "#7c7f87", "logo": "f-neutre" }
+ ],
+ "cartes": {}
+}

@@ -252,6 +252,72 @@
       fill('M68 42 C71 46 71 54 68 58 C65 54 65 46 68 42 Z'),
       ln('M62 60 V72 M72 60 V80', f), dot(62, 75, 2.4), dot(72, 83, 2.4),
     ],
+
+    /* ---------- les factions du jeu (les « adeptes ») ---------- */
+    // Adepte du sang : une goutte, une plus petite dedans, et deux gouttelettes qui tombent.
+    'f-sang': [
+      ln('M50 6 C61 26 78 44 78 64 C78 81 65 93 50 93 C35 93 22 81 22 64 C22 44 39 26 50 6 Z', t),
+      fill('M50 30 C57 43 67 54 67 66 C67 77 59 84 50 84 C41 84 33 77 33 66 C33 54 43 43 50 30 Z'),
+      { op: 'cut', d: 'M41 64 C41 57 44 52 47 49 C45.5 56 45 61 46.5 70 C43.5 69.5 41 67.5 41 64 Z' },
+      fill('M86 22 C88.5 27 91 30 91 33 C91 36 88.8 38 86 38 C83.2 38 81 36 81 33 C81 30 83.5 27 86 22 Z'),
+      fill('M14 40 C15.8 43.6 17.6 45.6 17.6 47.8 C17.6 49.8 16 51.2 14 51.2 C12 51.2 10.4 49.8 10.4 47.8 C10.4 45.6 12.2 43.6 14 40 Z'),
+      curl(22, 70, 4, 250, -1), curl(78, 70, 4, -70, 1),
+    ],
+    // Adepte du feu : une flamme, son cœur, des braises.
+    'f-feu': [
+      ln('M50 5 C57 22 74 32 75 54 C76 76 64 93 50 94 C36 93 24 76 25 56 C26 42 34 36 37 22 C43 31 44 39 46 44 C51 31 48 17 50 5 Z', t),
+      fill('M50 44 C57 55 63 62 63 74 C63 84 57 90 50 90 C43 90 37 84 37 74 C37 65 43 61 46 53 C48 59 50 62 52.5 62 C53 56 51 50 50 44 Z'),
+      dot(82, 24, 2.6), dot(18, 32, 2.1), dot(86, 42, 1.8), dot(13, 50, 1.6), dot(70, 12, 1.8),
+    ],
+    // Adepte de la vie et la mort : un crâne.
+    'f-vie-mort': [
+      fill('M50 9 C29 9 15 24 15 44 C15 56 21 64 30 68 L30 80 C30 84 33 87 37 87 L63 87 C67 87 70 84 70 80 L70 68 C79 64 85 56 85 44 C85 24 71 9 50 9 Z'),
+      { op: 'cut', d: 'M27 46 C27 38 33 34 40 35.5 C47 37 47.5 45.5 44.5 51.5 C40 56.5 29 56 27 46 Z' },
+      { op: 'cut', d: 'M73 46 C73 38 67 34 60 35.5 C53 37 52.5 45.5 55.5 51.5 C60 56.5 71 56 73 46 Z' },
+      { op: 'cut', d: 'M50 56 L44.5 66.5 H55.5 Z' },
+      { op: 'cut', d: 'M41 74 V88 M50 74 V88 M59 74 V88', stroke: f },
+      { op: 'cut', d: 'M30 72 H70', stroke: f },
+      { op: 'cut', d: 'M30 20 C36 15 42 14 47 14', stroke: f },
+    ],
+    // Adepte des océans : trois vagues, la première qui s'enroule.
+    'f-oceans': [
+      ln('M6 42 C16 32 27 31 34 39 C41 47 51 46 55 36 C59 25 73 21 81 29 C88 36 85 47 76 47 C69 47 68 38 74 36', T),
+      ln('M8 62 C18 53 29 53 37 61 C45 69 56 69 64 61 C72 53 83 53 92 62', t),
+      ln('M14 80 C22 74 30 74 38 80 C46 86 56 86 64 80 C72 74 80 74 88 80', f),
+      dot(92, 20, 2.4), dot(84, 11, 1.7), dot(20, 24, 2),
+    ],
+    // Adepte de la nature : un arbre, sa couronne de feuilles et ses racines.
+    'f-nature': [
+      { fn: (ctx) => { ctx.lineWidth = t; ctx.beginPath(); ctx.arc(50, 38, 31, 0, TAU); ctx.stroke(); } },
+      ln('M50 90 V44', T),
+      ln('M50 68 L35 54 M50 60 L66 45 M50 52 L39 35 M50 46 L59 26 M43 44 L30 40 M60 40 L72 32', f),
+      ln('M50 90 C42 90 34 91 22 95 M50 90 C58 90 66 91 78 95 M50 86 C46 90 42 93 38 96 M50 86 C54 90 58 93 62 96', f),
+      dot(32, 26, 2.6), dot(64, 18, 2.4), dot(74, 46, 2.6), dot(26, 50, 2.2), dot(46, 16, 2.2), dot(70, 60, 2),
+    ],
+    // Adepte de Filitus : une couronne sous trois étincelles.
+    'f-filitus': [
+      ln('M20 80 L15 42 L34 58 L50 34 L66 58 L85 42 L80 80 Z', t),
+      ln('M20 71 H80', f), dot(15, 42, 3.2), dot(50, 34, 3.2), dot(85, 42, 3.2),
+      fill('M50 70 L54.5 75.5 L50 81 L45.5 75.5 Z'), dot(33, 76, 2), dot(67, 76, 2),
+      { fn: star(50, 15, 4, 10, 2.4) }, { fn: star(25, 20, 4, 6.5, 1.6) }, { fn: star(75, 20, 4, 6.5, 1.6) },
+    ],
+    // Adepte d'Hepo : un œil grand ouvert, qui rayonne.
+    'f-hepo': [
+      ln('M8 54 C28 28 72 28 92 54 C72 80 28 80 8 54 Z', t),
+      { fn: (ctx) => { ctx.lineWidth = f; ctx.beginPath(); ctx.arc(50, 54, 15, 0, TAU); ctx.stroke(); } },
+      { fn: circle(50, 54, 8) },
+      { op: 'cut', fn: circle(46.5, 50.5, 2.6) },
+      ln('M50 21 V8 M32 25 L26 14 M68 25 L74 14 M18 33 L9 26 M82 33 L91 26', f),
+      dot(50, 6, 2.2),
+    ],
+    // Neutre : une balance à l'équilibre.
+    'f-neutre': [
+      ln('M50 16 V86', t), ln('M36 88 H64', T), dot(50, 11, 3.4),
+      ln('M16 28 H84', t),
+      ln('M16 28 L7 56 M16 28 L25 56 M84 28 L75 56 M84 28 L93 56', f),
+      fill('M4 56 H28 C28 64 22.5 68 16 68 C9.5 68 4 64 4 56 Z'),
+      fill('M72 56 H96 C96 64 90.5 68 84 68 C77.5 68 72 64 72 56 Z'),
+    ],
   };
 
   // Masque blanc du logo, en size × size pixels.
