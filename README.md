@@ -10,11 +10,14 @@ Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront e
 
 - **Accueil** : tes paquets, le paquet du jour (gratuit, un par jour, renouvelé à minuit), ta collection
   par rareté, tes dernières cartes.
-- **Paquets** : 5 cartes par paquet, révélées de la plus modeste à la plus rare ; la dernière est au moins
-  rare. Taux par carte (cartes 1 à 4) : très commune 42 %, commune 30 %, rare 17 %, super rare 8 %,
+- **Paquets** : 5 cartes par paquet. Le paquet se déchire, les cartes restent en pile face cachée,
+  la moins rare dessus. Survoler la carte du dessus montre l'aura de sa rareté (sur téléphone : en la
+  touchant) ; un clic la retourne, puis elle va se ranger dessous et la suivante attend. Chaque carte fait
+  un bruit de page, enrichi selon la rareté (note, accord, arpège, coup sourd pour la légendaire) ;
+  le son se coupe d'un bouton. La dernière carte est toujours au moins rare.
+  Taux par carte (cartes 1 à 4) : très commune 42 %, commune 30 %, rare 17 %, super rare 8 %,
   épique 2,5 %, légendaire 0,5 %. Dernière carte : rare 62 %, super rare 25 %, épique 9 %, légendaire 4 %.
-  Pas de garantie anti-malchance. Avant d'être retournées, les grandes raretés brillent déjà ; une épique ou une légendaire
-  éclate en étincelles. Les chances de tirage sont affichées.
+  Pas de garantie anti-malchance.
 - **Collection** : seulement tes cartes, avec leur nombre d'exemplaires ; triées par rareté ou par faction.
 - **Codex** : toutes les cartes du jeu, et des cartes exemples pour chaque rareté qu'une faction n'a pas encore.
   Elles tombent dans les paquets comme les autres, en attendant les vraies cartes.
@@ -43,6 +46,7 @@ Pour l'instant, on ouvre des paquets et on collectionne. Les combats viendront e
 - `jeu/stockage.js` : la sauvegarde. Aujourd'hui dans le navigateur ; demain, un compte en ligne
   prendra sa place sans toucher aux règles.
 - `jeu/donnees.js` : lit les cartes dans `data/codex.json`. `jeu/rendu.js` : les dessine (avec un cache).
+- `jeu/sons.js` : les sons de l'ouverture, fabriqués à la volée (aucun fichier audio).
 - `codex.html` : l'ancienne adresse du Codex ; elle renvoie vers l'écran Codex du jeu.
 - `data/codex.json` : les fiches et les étiquettes du Codex d'Eraser, exportées de l'artefact.
 - `data/factions.json` : les factions du jeu et la faction de chaque carte.
